@@ -1,26 +1,45 @@
-// import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
-import privateRoutes from './utils/privateRoutes'
+import { useEffect } from "react";
+import { useFonts } from "expo-font";
+import "react-native-url-polyfill/auto";
+import { Stack, SplashScreen } from "expo-router";
 
+import GlobalProvider from "../context/GlobalProvider";
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  // useFonts({
-  //   'outfit':require('../assets/fonts/Outfit-Regular.ttf'),
-  //   'outfit-medium':require('../assets/fonts/Outfit-Bold.ttf'),
-  //   'outfit-bold':require('../assets/fonts/Outfit-Medium.ttf')
-  // })
+  const [fontsLoaded, error] = useFonts({
+    'outfit':require('../assets/fonts/Outfit-Regular.ttf'),
+    'outfit-medium':require('../assets/fonts/Outfit-Bold.ttf'),
+    'outfit-bold':require('../assets/fonts/Outfit-Medium.ttf')
+  })
+
+  useEffect(() => {
+    if (error) throw error;
+
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, error]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
+  if (!fontsLoaded && !error) {
+    return null;
+  }
+
   return (
-    <authProvider>
-      <privateRoutes>
-        <Stack screenOptions={{
-          headerShown:false
-        }}>
+    <GlobalProvider>
+        <Stack 
+          screenOptions={{
+            headerShown:false
+          }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="search/[query]" />
         </Stack>
-      </privateRoutes>
-      <Stack>
-        <Stack.Screen name="components" />
-      </Stack>
-    </authProvider>
+    </GlobalProvider>
   );
 }
