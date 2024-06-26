@@ -16,7 +16,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package":"com.crunchtime-Driver.app",
+      "package":"com.ct-Driver.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
