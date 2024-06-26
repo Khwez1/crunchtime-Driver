@@ -1,10 +1,17 @@
-import { View, Text } from 'react-native'
+import { View, Text, SafeAreaView, ScrollView } from 'react-native'
 import React from 'react'
+import tw from 'twrnc'
 
 export default function history() {
   return (
-    <View>
-      <Text>history</Text>
-    </View>
+    <SafeAreaView>
+      <ScrollView>
+        <View>
+          {/* Title */}
+          <Text style={tw``}>History</Text>
+          {/* Title */}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   )
 }

@@ -1,87 +1,70 @@
-import { View, Text, ScrollView, Alert } from 'react-native'
-import React, { useState } from 'react'
-import { Link, router } from "expo-router";
-import { SafeAreaView } from 'react-native-safe-area-context'
-import tw from 'twrnc'
-import FormField from './components/FormField'
-import { createUser } from "../../lib/appwrite";
-import { useGlobalContext } from '../../context/GlobalProvider'
+import { View, Text, ScrollView, Alert, SafeAreaView, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { Link } from "expo-router";
+import tw from 'twrnc';
+import { Register } from "../../lib/appwrite";
 
+export default function SignUp() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [isSubmitting, setSubmitting] = useState(false);
 
-export default function signUp() {
-  const { setUser, setIsLogged } = useGlobalContext();
-  const [form, setForm] = useState({
-    username:'',
-    email:'',
-    password:''
-  })
-  const [isSubmitting, setSubmitting] = useState(false)
-
-  const submit = async() => {
-    if (form.username === "" || form.email === "" || form.password === "") {
-      Alert.alert("Error", "Please fill in all fields");
-    }
-
+  const handleSignUp = async () => {
     setSubmitting(true);
     try {
-      const result = await createUser(form.email, form.password, form.username);
-      setUser(result);
-      setIsLogged(true);
-
-      router.replace("/home");
+      await Register(email, password, username);
+      Alert.alert('Success', 'Account created successfully!');
     } catch (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert('Error', 'Failed to create account.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <SafeAreaView >
-        <ScrollView>
-            <View style={tw`w-full justify-center min-h-[82vh] px-4 my-6`}>
-              <Text style={tw`text-2xl text-black font-bold mt-10`}>Sign Up</Text>
+    <SafeAreaView>
+      <ScrollView>
+        <View style={tw`w-full justify-center px-4 my-6`}>
+          <Text style={tw`text-2xl text-black font-bold mt-10`}>Sign Up</Text>
 
-              <FormField
-                title="Username"
-                value={form.email}
-                handleChangeText={(e) => setForm({ ...form, username: e })}
-                otherStyles="mt-10"
-              />
+          <TextInput
+            placeholder="Username"
+            value={username}
+            onChangeText={setUsername}
+            style={tw`mt-10 border border-gray-300 p-4 rounded-lg`}
+          />
 
-              <FormField
-                title="Email"
-                value={form.email}
-                handleChangeText={(e) => setForm({ ...form, email: e })}
-                otherStyles="mt-7"
-                keyboardType="email-address"
-              />
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            style={tw`mt-7 border border-gray-300 p-4 rounded-lg`}
+            keyboardType="email-address"
+          />
 
-              <FormField
-                title="Password"
-                value={form.password}
-                handleChangeText={(e) => setForm({ ...form, pasword: e })}
-                otherStyles="mt-7"
-              />
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            style={tw`mt-7 border border-gray-300 p-4 rounded-lg`}
+            secureTextEntry
+          />
 
-              <button 
-                style={tw`w-full mt-7 p-4 bg-red-600 text-black font-semibold rounded-xl`}
-                handlePress={submit}
-                isLoading={isSubmitting}
-              >
-                Sign In
-              </button>
+          <TouchableOpacity 
+            style={tw`w-full mt-7 p-4 bg-red-600 text-black font-semibold rounded-xl`}
+            onPress={handleSignUp}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={tw`text-center text-white`}>Sign Up</Text>}
+          </TouchableOpacity>
 
-              <View style={tw`justify-center pt-5 flex-row gap-2`}>
-                  <Text style={tw`text-lg`}>
-                       have an account already?
-                  </Text>
-                  <Link href="/signIn" style={tw`text-red-600 font-bold text-lg`}>Sign in</Link>
-              </View>
-
-
-            </View>
-        </ScrollView>
+          <View style={tw`justify-center pt-5 flex-row gap-2`}>
+            <Text style={tw`text-lg`}>Already have an account?</Text>
+            <Link href="/signIn" style={tw`text-red-600 font-bold text-lg`}>Sign in</Link>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
-  )
+  );
 }
