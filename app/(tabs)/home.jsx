@@ -70,7 +70,7 @@ export default function home() {
             <Text style={tw`text-lg font-bold`}>
               Recent Deliveries
             </Text>
-            <Text style={tw`font-xl font-bold text-red-600`}>
+            <Text style={tw`font-bold text-red-600`}>
               See all
             </Text>
           </View>
