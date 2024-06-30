@@ -1,10 +1,10 @@
 import React from 'react'
 import { Redirect, Stack } from 'expo-router'
-import { useGlobalContext } from '../../context/GlobalProvider'
+// import { useGlobalContext } from '../../context/GlobalProvider'
 export default function AuthLayout() {
-  const { loading, isLogged } = useGlobalContext();
+  // const { loading, isLogged } = useGlobalContext();
 
-  if (!loading && isLogged) return <Redirect href="/home" />;
+  // if (!loading && isLogged) return <Redirect href="/home" />;
   
   return (
     <>

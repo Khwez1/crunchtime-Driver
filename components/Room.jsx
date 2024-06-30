@@ -12,31 +12,38 @@ export default function Room() {
   useEffect(() => {
     fetchMessages();
 
-    client.subscribe(`databases.${'66797c090028543355dd'}.collections.${'667e783500102010cd30'}.documents`, response => {
+    const unsubscribe = client.subscribe(`databases.${'66797c090028543355dd'}.collections.${'667e783500102010cd30'}.documents`, response => {
 
-      if (response.events.includes("datbases.*.collections.*.documents.*.create")) {
+      if (response.events.includes("databases.*.collections.*.documents.*.create")) {
         console.log('A message was CREATED');
+        setMessages(prevState => [response.payload, ...prevState]);
       }
-      if (response.events.includes("datbases.*.collections.*.documents.*.delete")) {
+      if (response.events.includes("databases.*.collections.*.documents.*.delete")) {
         console.log('A message was DELETED');
+        setMessages(messages => messages.filter(message => message.$id !== response.payload.$id))
       }
     });
+
+    return () => {
+      unsubscribe()
+    }
 
   }, []);
 
   const fetchMessages = async () => {
     try {
       const messages = await getMessages();
-      setMessages(messages);
+      setMessages(messages)
     } catch (error) {
       Alert.alert('Failed to fetch messages:', error);
+    }finally{
+    console.log(messages);
     }
   };
 
   const handleDelete = async (message_id) => {
     try {
       await deleteMessage(message_id)
-      setMessages(prevState => prevState.filter(message => message.$id !== message.$id))
     } catch (error) {
       Alert.alert("Failed to delete!")
     }
