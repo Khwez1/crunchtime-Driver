@@ -27,7 +27,7 @@ export default function SignIn() {
   return (
     <SafeAreaView>
       <ScrollView>
-        <View style={tw`w-full justify-center min-h-[82vh] px-4 my-6`}>
+        <View style={tw`w-full justify-center px-4 my-6`}>
           <Text style={tw`text-2xl text-black font-bold mt-10`}>Log In</Text>
 
           <TextInput
