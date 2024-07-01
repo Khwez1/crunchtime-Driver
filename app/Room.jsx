@@ -3,11 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { sendMessage, getMessages, deleteMessage, client} from '../lib/appwrite';
 import { Ionicons } from '@expo/vector-icons';
 import tw from 'twrnc';
+import { useGlobalContext } from '../context/GlobalProvider';
+import { Permission } from 'react-native-appwrite';
 
 export default function Room() {
   const [messages, setMessages] = useState([]);
   const [messageBody, setMessageBody] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
+
+  const {user} = useGlobalContext()
 
   useEffect(() => {
     fetchMessages();
@@ -50,9 +54,17 @@ export default function Room() {
   }
 
   const handleSubmit = async () => {
+    const payload = {
+      user_id: user.$id,
+      username: user.name,
+      body: messageBody
+    }
+    const Permissions = [
+      Permission.write(Role.user(user.$id))
+    ]
     setSubmitting(true);
     try {
-      await sendMessage(messageBody);
+      await sendMessage(payload, Permissions);
       Alert.alert('Success', 'Message sent!');
       setMessageBody('');
       fetchMessages(); // Refresh messages after sending a new one
@@ -95,12 +107,25 @@ export default function Room() {
             {messages.map((message) => (
               <View key={message.$id} style={tw`flex flex-col gap-2 mb-4 p-4 bg-[rgba(27,27,39,1)] border border-[rgba(40,41,57,1)] rounded-lg`}>{/* message--wrapper */}
                 <View style={tw`flex justify-between items-center mb-2`}>{/* message--header */}
-                  <Text style={tw`text-gray-400`}>{message.$createdAt}</Text>{/* message timestamp */}
+                  <Text>
+                    {message?.username ? (
+                      <Text style={tw`text-white`}>{message.username}</Text>
+                    ):(
+                      <Text style={tw`text-white`}>
+                        Anonymous user
+                      </Text>
+                    )}
+                  </Text>
+                  <Text style={tw`text-gray-400`}>{new Date(message.$createdAt).toLocaleString()}</Text>{/* message timestamp */}
+
+                  {message.$permissions.includes(`delete(\"user:${user.id}\")`) && (
                   <TouchableOpacity
                     onPress={() => handleDelete(message.$id)}
                   >
                     <Ionicons name="trash-bin-sharp" size={24} color="black" />
                   </TouchableOpacity>
+                  )}
+
                 </View>
                 <View style={tw`p-4 bg-[rgba(219,26,90,1)] text-[rgb(226,227,232)] rounded-xl max-w-full`}>{/* message--body */}
                   <Text>{message.body}</Text>

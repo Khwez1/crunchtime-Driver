@@ -3,7 +3,7 @@ import { useFonts } from "expo-font";
 import "react-native-url-polyfill/auto";
 import { Stack, SplashScreen } from "expo-router";
 
-// import GlobalProvider from "../context/GlobalProvider";
+import GlobalProvider from "../context/GlobalProvider";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -30,7 +30,7 @@ export default function RootLayout() {
   }
 
   return (
-    // <GlobalProvider>
+    <GlobalProvider>
       <Stack 
         screenOptions={{
           headerShown:false
@@ -39,7 +39,8 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="search/[query]" />
+        <Stack.Screen name="Room" />
       </Stack>
-    //  </GlobalProvider>
+    </GlobalProvider>
   );
 }

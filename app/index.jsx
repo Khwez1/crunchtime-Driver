@@ -3,13 +3,12 @@ import { ScrollView, View, Text, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from 'twrnc'
 import { Link } from "expo-router";
-import Room from "../components/Room";
-// import { useGlobalContext } from "../context/GlobalProvider"; 
+import { useGlobalContext } from "../context/GlobalProvider"; 
 
 export default function App() {
-  // const { loading, isLogged } = useGlobalContext();
+  const { loading, isLogged } = useGlobalContext();
 
-  //  if (!loading && isLogged) return <Redirect href="/home" />;
+   if (!loading && isLogged) return <Redirect href="/home" />;
   return (
     <SafeAreaView>
       <ScrollView contentContainerStyle={{height: '100%'}}>
