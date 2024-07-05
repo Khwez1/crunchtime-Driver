@@ -1,121 +1,134 @@
-// profile.jsx
-
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, TextInput } from 'react-native'
+import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image, TextInput, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { signOut, Profile, updateProfile } from '../../lib/appwrite'
+import { signOut, fetchProfile, updateProfile } from '../../lib/appwrite'
 import { useGlobalContext } from '../../context/GlobalProvider'
 import tw from 'twrnc'
 
-export default function ProfileScreen() {
-  const { user, setUser, isLogged, loading } = useGlobalContext()
-  const [userDetails, setUserDetails] = useState(null)
+export default function Profile() {
+  const { user } = useGlobalContext()
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
-  const [updatedUsername, setUpdatedUsername] = useState('')
+  const [newUsername, setNewUsername] = useState('')
 
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      if (isLogged && user) {
-        try {
-          const details = await Profile(user.$id);
-          setUserDetails(details);
-          setUpdatedUsername(details.username);
-        } catch (error) {
-          console.log("Failed to fetch user details:", error);
-        }
-      }
-    };
+    if (user && user.$id) {
+      getProfile(user.$id)
+    } else {
+      setLoading(false)
+    }
+  }, [user])
 
-    fetchUserDetails();
-  }, [isLogged, user]);
+  const getProfile = async (userId) => {
+    try {
+      const fetchedProfile = await fetchProfile(userId)
+      setProfile(fetchedProfile)
+      setNewUsername(fetchedProfile.username)
+    } catch (error) {
+      console.error("Failed to fetch profile:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleUpdateProfile = async () => {
-    if (!userDetails) return;
+    if (!profile) return;
 
     try {
-      const updatedData = { username: updatedUsername };
-      const updatedDoc = await updateProfile(userDetails.$id, updatedData);
-      setUserDetails(updatedDoc);
+      const updatedData = { username: newUsername };
+      const response = await updateProfile(profile.$id, updatedData);
+      setProfile(response);
       setEditMode(false);
-      // Update the global user state if necessary
-      setUser(prevUser => ({ ...prevUser, name: updatedUsername }));
+      Alert.alert('Success', 'Profile updated successfully');
     } catch (error) {
-      console.log("Failed to update profile:", error);
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      // The global state will be updated in the GlobalProvider
-    } catch (error) {
-      console.log("Failed to sign out:", error);
+      console.error("Failed to update profile:", error);
+      Alert.alert('Error', 'Failed to update profile');
     }
   };
 
   if (loading) {
     return (
-      <SafeAreaView style={tw`flex-1 justify-center items-center`}>
+      <SafeAreaView>
         <Text>Loading...</Text>
       </SafeAreaView>
-    );
+    )
   }
 
-  if (!isLogged) {
+  if (!user || !profile) {
     return (
-      <SafeAreaView style={tw`flex-1 justify-center items-center`}>
-        <Text>Please log in to view your profile</Text>
+      <SafeAreaView>
+        <ScrollView>
+          <Text>Please log in to view your profile</Text>
+        </ScrollView>
       </SafeAreaView>
-    );
+    )
   }
 
   return (
-    <SafeAreaView style={tw`flex-1`}>
-      <ScrollView contentContainerStyle={tw`p-4`}>
-        {userDetails ? (
-          <View>
-            <Text style={tw`text-3xl font-bold mb-4`}>
-              Welcome {userDetails.username}
-            </Text>
-            {editMode ? (
-              <View style={tw`mb-4`}>
-                <TextInput
-                  style={tw`border p-2 rounded-md mb-2`}
-                  value={updatedUsername}
-                  onChangeText={setUpdatedUsername}
-                  placeholder="New username"
-                />
-                <TouchableOpacity
-                  style={tw`bg-blue-500 p-3 rounded-md mb-2`}
-                  onPress={handleUpdateProfile}
-                >
-                  <Text style={tw`text-white text-center`}>Save Changes</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={tw`bg-gray-300 p-3 rounded-md`}
-                  onPress={() => setEditMode(false)}
-                >
-                  <Text style={tw`text-center`}>Cancel</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
+    <SafeAreaView>
+      <ScrollView>
+        <View style={tw`p-4`}>
+          <Image 
+            source={{ uri: `https://cloud.appwrite.io/v1/avatars/initials?name=${encodeURIComponent(profile.username)}&project=66694f2c003d7561352e` }} 
+            style={tw`w-24 h-24 rounded-full mb-4`}
+          />
+          <Text style={tw`text-3xl font-bold mb-4`}>Welcome {profile.username}</Text>
+          
+          {editMode ? (
+            <View style={tw`mb-4`}>
+              <TextInput
+                style={tw`border p-2 rounded-md mb-2`}
+                value={newUsername}
+                onChangeText={setNewUsername}
+                placeholder="New username"
+              />
               <TouchableOpacity
-                style={tw`bg-green-500 p-3 rounded-md mb-4`}
-                onPress={() => setEditMode(true)}
+                style={tw`bg-blue-500 p-3 rounded-md mb-2`}
+                onPress={handleUpdateProfile}
               >
-                <Text style={tw`text-white text-center`}>Edit Profile</Text>
+                <Text style={tw`text-white text-center`}>Save Changes</Text>
               </TouchableOpacity>
-            )}
+              <TouchableOpacity
+                style={tw`bg-gray-300 p-3 rounded-md`}
+                onPress={() => setEditMode(false)}
+              >
+                <Text style={tw`text-center`}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
             <TouchableOpacity
-              style={tw`bg-red-600 p-3 rounded-md`}
-              onPress={handleSignOut}
+              style={tw`bg-green-500 p-3 rounded-md mb-4`}
+              onPress={() => setEditMode(true)}
             >
-              <Text style={tw`text-white text-center`}>Logout</Text>
+              <Text style={tw`text-white text-center`}>Edit Profile</Text>
             </TouchableOpacity>
+          )}
+          
+          <View style={tw`mb-4`}>
+            <Text style={tw`text-lg font-semibold`}>Username:</Text>
+            <Text>{profile.username}</Text>
           </View>
-        ) : (
-          <Text style={tw`text-xl`}>Loading user details...</Text>
-        )}
+          
+          <View style={tw`mb-4`}>
+            <Text style={tw`text-lg font-semibold`}>Email:</Text>
+            <Text>{profile.email}</Text>
+          </View>
+          
+          <View style={tw`mb-4`}>
+            <Text style={tw`text-lg font-semibold`}>Account ID:</Text>
+            <Text>{profile.accountId}</Text>
+          </View>
+          
+          <TouchableOpacity
+            style={tw`bg-red-600 p-4 rounded-xl mt-4`}
+            onPress={() => signOut('current')}
+          >
+            <Text style={tw`text-white text-center font-bold`}>
+              Log Out
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
-  );
+  )
 }
