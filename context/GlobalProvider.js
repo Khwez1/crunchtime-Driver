@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-
 import { account } from "../lib/appwrite";
 
 const GlobalContext = createContext();
@@ -9,6 +8,11 @@ const GlobalProvider = ({ children }) => {
   const [isLogged, setIsLogged] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const signOut = async () => {
+    await account.deleteSession('current')
+    setUser(null)
+  }
 
   useEffect(() => {
     account.get()
@@ -37,6 +41,7 @@ const GlobalProvider = ({ children }) => {
         user,
         setUser,
         loading,
+        signOut
       }}
     >
       {children}

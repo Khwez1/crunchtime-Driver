@@ -1,11 +1,11 @@
 import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image, TextInput, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { signOut, fetchProfile, updateProfile } from '../../lib/appwrite'
+import { fetchProfile, updateProfile } from '../../lib/appwrite'
 import { useGlobalContext } from '../../context/GlobalProvider'
 import tw from 'twrnc'
 
 export default function Profile() {
-  const { user } = useGlobalContext()
+  const { user, signOut } = useGlobalContext()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
@@ -72,7 +72,7 @@ export default function Profile() {
             source={{ uri: `https://cloud.appwrite.io/v1/avatars/initials?name=${encodeURIComponent(profile.username)}&project=66694f2c003d7561352e` }} 
             style={tw`w-24 h-24 rounded-full mb-4`}
           />
-          <Text style={tw`text-3xl font-bold mb-4`}>Welcome {profile.username}</Text>
+          <Text style={tw`text-3xl font-bold mb-4`}>👋Welcome! {profile.username}</Text>
           
           {editMode ? (
             <View style={tw`mb-4`}>
@@ -121,7 +121,7 @@ export default function Profile() {
           
           <TouchableOpacity
             style={tw`bg-red-600 p-4 rounded-xl mt-4`}
-            onPress={() => signOut('current')}
+            onPress={() => signOut()}
           >
             <Text style={tw`text-white text-center font-bold`}>
               Log Out

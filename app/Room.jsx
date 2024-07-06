@@ -62,6 +62,7 @@ export default function Room() {
     const Permissions = [
       Permission.write(Role.user(user.$id))
     ]
+
     setSubmitting(true);
     try {
       await sendMessage(payload, Permissions);
@@ -118,7 +119,7 @@ export default function Room() {
                   </Text>
                   <Text style={tw`text-gray-400`}>{new Date(message.$createdAt).toLocaleString()}</Text>{/* message timestamp */}
 
-                  {message.$permissions.includes(`delete(\"user:${user.id}\")`) && (
+                  {message.$permissions.includes(`delete(\"user:${user.$id}\")`) && (
                   <TouchableOpacity
                     onPress={() => handleDelete(message.$id)}
                   >
