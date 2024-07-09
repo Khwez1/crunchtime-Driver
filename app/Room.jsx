@@ -4,7 +4,7 @@ import { sendMessage, getMessages, deleteMessage, client} from '../lib/appwrite'
 import { Ionicons } from '@expo/vector-icons';
 import tw from 'twrnc';
 import { useGlobalContext } from '../context/GlobalProvider';
-import { Permission } from 'react-native-appwrite';
+import { Permission, Role } from 'react-native-appwrite';
 
 export default function Room() {
   const [messages, setMessages] = useState([]);
@@ -59,9 +59,11 @@ export default function Room() {
       username: user.name,
       body: messageBody
     }
+
     const Permissions = [
-      Permission.write(Role.user(user.$id))
-    ]
+      Permission.write(Role.user(user.$id)),
+      Permission.delete(Role.user(user.id))
+    ];
 
     setSubmitting(true);
     try {
@@ -80,6 +82,7 @@ export default function Room() {
     <SafeAreaView style={tw``}>
       <ScrollView>{/* main */}
         <View style={tw`p-8 bg-white`}>{/* room--container */}
+
           <View style={tw`flex flex-col gap-2 mb-8`}>{/* message--form */}
             <TextInput
               required
@@ -90,6 +93,7 @@ export default function Room() {
               onChangeText={setMessageBody}
             />
           </View>
+
           <View style={tw`flex justify-end mb-8`}>{/* send-btn--wrapper */}
             <TouchableOpacity
               style={tw`w-full mt-7 p-4 bg-red-600 text-black font-semibold rounded-xl`}
@@ -134,6 +138,7 @@ export default function Room() {
               </View>
             ))}
           </View>
+          
         </View>
       </ScrollView>
     </SafeAreaView>
