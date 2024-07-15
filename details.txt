@@ -1,0 +1,137 @@
+1. Authentication and Profile Management
+ SIGN UP
+ - Functionality: Allow new drivers to register by providing personal details, vehicle information, and necessary documents.
+ Fields:
+  - First Name
+  - Last Name
+  - Email
+  - Password
+  - Phone Number
+  - Address
+  - Vehicle Type
+  - Vehicle License Plate
+  - Driver's License Number
+  - Insurance Policy Number
+  - Profile Picture Upload
+ LOGIN
+ - Functionality: Allow drivers to log in using their email and password.
+ Features:
+  - Email
+  - Password
+  - Remember Me
+  - Forgot Password
+ Profile Management
+ - Functionality: Allow drivers to view and update their profile information.
+ Features:
+  - Edit Personal Details (Name, Phone Number, Address)
+  - Edit Vehicle Information
+  - Change Password
+  - Update Profile Picture
+  - View Driver's License and Insurance Information
+
+2. Dashboard
+ OVERVIEW
+ - Functionality: Provide an overview of the driver’s activities.
+ - Features:
+  - Summary of Pending Deliveries
+  - Summary of Completed Deliveries
+  - Earnings Overview
+ NOTIFCATIONS
+ - Functionality: Display real-time notifications for new delivery assignments, updates, and other important information.
+ - Features:
+  - New Delivery Alerts
+  - Status Updates
+  - Important Messages from Admin
+
+3. Delivery Management
+ ASSIGNED DELIVERIES
+ - Functionality: List all the deliveries assigned to the driver.
+ - Features:
+  - Order ID
+  - Pickup Location
+  - Delivery Location
+  - Customer Contact Information
+  - Order Details
+ DELIVERIES DETAILS
+ - Functionality: Provide detailed information about a specific delivery.
+ - Features:
+  - Order Items and Quantities
+  - Special Instructions
+  - Payment Status
+  - Tips Information
+  - Contact Options (Call/Message Customer)
+ UPDATE DELIVERY STATUS
+ - Functionality: Allow drivers to update the status of their deliveries.
+ - Statuses:
+  - Accepted
+  - Picked Up
+  - On the Way
+  - Delivered
+  - Failed Delivery (with reason)
+
+4. Real-Time Navigation
+ INTERGRATION WITH MAPPING SERVICES
+ - Functionality: Provide turn-by-turn navigation and route optimization.
+ - Features:
+  - Integration with Google Maps or similar service
+  - Real-Time Traffic Updates
+  - Alternative Route Suggestions
+  - Estimated Time of Arrival (ETA)
+
+5. Earnings and Payments
+ EARNINGS OVERVIEW
+ - Functionality: Show drivers their earnings for the day, week, and month.
+ - Features:
+  - Total Earnings
+  - Tips
+  - Bonuses
+ PAYMENT HISTORY
+ - Functionality: Provide a detailed breakdown of all payments received.
+ - Features:
+  - Date and Time of Payments
+  - Order ID Associated with Payments
+  - Amount Earned per Order
+  - Total Amount Paid Out
+
+6. Support and Help
+ FAQs
+ - Functionality: Provide a list of frequently asked questions and answers.
+ - Features:
+  - Categories of FAQs (Account, Deliveries, Payments)
+ CONTACT SUPPORT
+ - Functionality: Allow drivers to contact support for help.
+ - Features:
+  - In-App Messaging with Support
+  - Email Support
+  - Phone Support
+
+7. Settings
+ APP PREFERENCES
+ - Functionality: Allow drivers to customize app settings.
+ - Features:
+  - Notification Preferences
+  - Language Selection
+  - Privacy Settings
+
+8. Security
+ DATA ENCRYPTION
+ - Functionality: Ensure all sensitive data is encrypted.
+ - Features:
+  - SSL/TLS for Data in Transit
+  - AES Encryption for Data at Rest
+ TWO-FACTOR AUTHENTICATON (Optional)
+ - Functionality: Add an extra layer of security for driver accounts.
+ - Features:
+  - SMS or Email-Based Two-Factor Authentication
+ WORKFLOW EXAMPLE
+ 1. Driver Signs Up: The driver registers by providing all necessary details and uploading required documents.
+ 2. Driver Logs In: The driver logs into the app using their email and password.
+ 3. View Dashboard: The driver sees an overview of pending and completed deliveries.
+ 4. Receive Notification: The driver receives a notification for a new delivery assignment.
+ 5. View Delivery Details: The driver checks the details of the assigned delivery.
+ 6. Accept Delivery: The driver accepts the delivery and starts navigation to the vendor location.
+ 7. Update Status: The driver updates the status to "Picked Up" once they collect the order.
+ 8. Navigate to Delivery Location: The driver uses the in-app navigation to reach the customer’s address.
+ 9. Complete Delivery: The driver updates the status to "Delivered" after handing over the order to the customer.
+ 10. Earnings Update: The driver’s earnings for the completed delivery are updated in the app.
+ 11. Customer Rating: Optionally, the customer can rate the delivery experience, and the driver’s rating is updated.

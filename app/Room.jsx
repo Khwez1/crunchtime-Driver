@@ -62,7 +62,7 @@ export default function Room() {
 
     const Permissions = [
       Permission.write(Role.user(user.$id)),
-      Permission.delete(Role.user(user.id))
+      Permission.delete(Role.user(user.$id))
     ];
 
     setSubmitting(true);

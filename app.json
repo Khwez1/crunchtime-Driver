@@ -16,7 +16,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package":"com.ct-Driver.app",
+      "package": "com.khwezi.crunchtimeDriver",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -38,6 +38,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "03566c67-7aff-4bb9-b71f-fd7bb77591fa"
+      }
     }
   }
 }
