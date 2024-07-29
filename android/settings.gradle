@@ -1,4 +1,4 @@
-rootProject.name = 'crunchtime-Driver'
+rootProject.name = 'my-expo-app'
 
 dependencyResolutionManagement {
   versionCatalogs {

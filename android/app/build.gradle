@@ -91,9 +91,9 @@ packagingOptions {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.khwezi.crunchtimeDriver'
+    namespace 'com.khwezi.myexpoapp'
     defaultConfig {
-        applicationId 'com.khwezi.crunchtimeDriver'
+        applicationId 'com.khwezi.myexpoapp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
