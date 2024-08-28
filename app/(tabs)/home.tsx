@@ -3,7 +3,7 @@ import React from 'react';
 import Buttons from '../../components/Buttons';
 import Cards from '../../components/Cards';
 import Minicards from '../../components/Minicards';
-import Map from '../../components/Map';
+
 export default function home() {
   return (
     <SafeAreaView>

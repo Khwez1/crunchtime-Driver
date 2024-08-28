@@ -5,7 +5,7 @@ import { Link } from 'expo-router';
 export default function Buttons() {
   return (
     <View>
-        <ScrollView horizontal>
+      <ScrollView horizontal>
         <Text className="bg-red-600 mr-2 p-3 px-5 text-white rounded-lg">
           <Link href='/Room'>
             button
@@ -26,7 +26,7 @@ export default function Buttons() {
         <Text className="bg-red-600 mr-2 p-3 px-5 text-white rounded-lg">
           button
         </Text>
-    </ScrollView>
+      </ScrollView>
     </View>
   )
 }
