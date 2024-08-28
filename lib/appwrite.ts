@@ -137,3 +137,38 @@ export async function updateProfile(documentId: string, updatedData: {}) {
     throw error;
   }
 }
+
+export async function uploadPhoto(photoUri) {
+  try {
+    // Replace 'file://' with empty string if it exists
+    const processedUri = photoUri.replace('file://', '');
+
+    const response = await fetch(processedUri);
+    const pfp = await response.blob();
+
+    const file = await storage.createFile(
+      '66bc6f82001a5b627b81', // Your bucket ID
+      ID.unique(),
+      pfp
+    );
+
+    return file;
+  } catch (error) {
+    console.error('Failed to upload photo:', error);
+    throw new Error(`Failed to upload photo: ${error.message}`);
+  }
+}
+
+export async function searchPosts(query: string) {
+  try {
+    const posts = await databases.listDocuments(
+      '66797c090028543355dd', // Database ID
+      '667e783500102010cd30', // Collection ID, messages
+      [Query.search('title', query)]
+    )
+
+    return posts.documents
+  } catch (err) {
+    throw new Error (err)
+  }
+}
