@@ -11,6 +11,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [newUsername, setNewUsername] = useState('');
+  const [newEmail, setNewEmail] = useState('');
 
   // Camera-related state
   const [facing, setFacing] = useState<CameraType>('back');
@@ -42,7 +43,7 @@ export default function Profile() {
     if (!profile) return;
 
     try {
-      const updatedData = { username: newUsername };
+      const updatedData = { username: newUsername, email:newEmail };
       const response = await updateProfile(profile.$id, updatedData);
       setProfile(response);
       setEditMode(false);
@@ -129,6 +130,7 @@ export default function Profile() {
 
           {editMode ? (
             <View style={{ marginBottom: 16 }}>
+
               <TextInput
                 style={{
                   borderWidth: 1,
@@ -141,6 +143,19 @@ export default function Profile() {
                 onChangeText={setNewUsername}
                 placeholder="New username"
               />
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                  padding: 8,
+                  borderRadius: 8,
+                  marginBottom: 8,
+                }}
+                value={newEmail}
+                onChangeText={setNewEmail}
+                placeholder="New email"
+              />
+
               <TouchableOpacity
                 style={{ backgroundColor: '#4CAF50', padding: 12, borderRadius: 8, marginBottom: 8 }}
                 onPress={handleUpdateProfile}
@@ -171,6 +186,11 @@ export default function Profile() {
           <View style={{ marginBottom: 16 }}>
             <Text style={{ fontWeight: 'bold' }}>Email:</Text>
             <Text>{profile.email}</Text>
+          </View>
+
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontWeight: 'bold' }}>phone:</Text>
+            <Text>{profile.phone}</Text>
           </View>
 
           <View style={{ marginBottom: 16 }}>

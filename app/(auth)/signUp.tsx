@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Alert, SafeAreaView, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Image, Text, ScrollView, Alert, SafeAreaView, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
 import { Link } from "expo-router";
 import { Register } from "../../lib/appwrite";
@@ -25,7 +25,11 @@ export default function SignUp() {
     <SafeAreaView>
       <ScrollView>
         <View className="w-full justify-center px-4 my-6">
-          <Text className="text-2xl text-black font-bold mt-10">Sign Up</Text>
+          <View className="w-full justify-center items-center mt-5 px-4">
+            <Image source={require('assets/header.png')} className="mt-5" resizeMode='contain'/>
+          </View>
+          <Text className="text-5xl text-center text-black font-bold mt-5">Create Account</Text>
+          <Text className="text-center mt-3 text-xl"> Welcome to Crunchtime halaal food delivery. Signup to create a free delivery. Signup to create an account to start delivering</Text>
 
           <TextInput
             placeholder="Username"
@@ -51,7 +55,7 @@ export default function SignUp() {
           />
 
           <TouchableOpacity 
-            className="w-full mt-7 p-4 bg-red-600 text-black font-semibold rounded-xl"
+            className="w-full mt-7 p-4 bg-red-500 text-black font-semibold rounded-xl"
             onPress={handleSignUp}
             disabled={isSubmitting}
           >
@@ -60,7 +64,7 @@ export default function SignUp() {
 
           <View className="justify-center pt-5 flex-row gap-2">
             <Text className="text-lg">Already have an account?</Text>
-            <Link href="/signIn" className="text-red-600 font-bold text-lg">Sign in</Link>
+            <Link href="/signIn" className="text-red-500 font-bold text-lg">Sign in</Link>
           </View>
         </View>
       </ScrollView>

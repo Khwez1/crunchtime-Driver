@@ -1,11 +1,12 @@
-import { Client, Avatars, Databases, Account, ID, Query } from 'react-native-appwrite';
+import { Client, Avatars, Databases, Account, ID, Query, Storage } from 'react-native-appwrite';
+
 let client = new Client();
 let databases = new Databases(client);
 let avatars = new Avatars(client);
 let account = new Account(client);
+let storage = new Storage(client)
 
-
-export { account, databases, avatars, client };
+export { account, storage, databases, avatars, client };
 
 client
   .setEndpoint("https://cloud.appwrite.io/v1")
@@ -29,7 +30,6 @@ export async function Register(email: string, password: string, username: string
         avatar: avatars.getInitials(username),
       }
     );
-    await signIn(email, password)
     console.log('Document created with user details!');
   } catch (error) {
     console.error('Failed to create account:', error);
@@ -39,22 +39,52 @@ export async function Register(email: string, password: string, username: string
 
 
 // Sign in
-export async function signIn(email: string, password: string) {
-  try {
-    await account.createEmailPasswordSession(email, password); // Ensure this is the correct method
-    const user = await account.get();
-    console.log('User signed in:', user);
-    return user;
-  } catch (error) {
-    console.error('Failed to sign in:', error);
-    throw error;
-  }
-}
+// export async function signIn(email: string, password: string) {
+//   try {
+//     await account.createEmailPasswordSession(email, password); // Ensure this is the correct method
+//     const user = await account.get();
+//     console.log('User signed in:', user);
+//     return user;
+//   } catch (error) {
+//     console.error('Failed to sign in:', error);
+//     throw error;
+//   }
+// }
+
+// export async function signIn(email: string, password: string) {
+//   try {
+//     // Attempt to sign in with email and password
+//     await account.createEmailPasswordSession(email, password);
+//     // If no exception is thrown, the user is signed in without needing MFA
+//     setIsLogged(true);
+//     router.push('/home');
+//   } catch (error) {
+//     if (error.type === 'user_more_factors_required') {
+//       try {
+//         // If more factors are required, create an MFA challenge
+//         const challenge = await account.createMfaChallenge('email');
+//         // Store the challenge ID for later use
+//         setChallengeId(challenge.$id);
+//         // Notify the user and redirect to the MFA screen
+//         console.log('OTP Sent', 'Please check your email for the OTP.');
+//         router.push('/mfa');
+//       } catch (mfaError) {
+//         console.error('Failed to create MFA challenge:', mfaError);
+//         throw mfaError;
+//       }
+//     } else {
+//       console.error('Failed to sign in:', error);
+//       throw error;
+//     }
+//   }
+// }
+
+//Mfa
+
 
 //messaging
 // Send message
 export async function sendMessage(payload: {}, Permissions: []) {
-
   try {
     await databases.createDocument(
       '66797c090028543355dd', // Database ID
