@@ -1,19 +1,23 @@
 import { View, Image, Text, ScrollView, Alert, SafeAreaView, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
 import { Link } from "expo-router";
-import { Register } from "../../lib/appwrite";
+import { router } from 'expo-router';
+import { useGlobalContext } from '~/providers/GlobalProvider';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
+  const [phone, setphone] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
-
+  const { Register } = useGlobalContext();
+  
   const handleSignUp = async () => {
     setSubmitting(true);
     try {
-      await Register(email, password, username);
+      await Register(email, password, username, phone);
       Alert.alert('Success', 'Account created successfully!');
+      router.push('/verify')
     } catch (error) {
       Alert.alert('Error', 'Failed to create account.');
     } finally {
@@ -36,6 +40,13 @@ export default function SignUp() {
             value={username}
             onChangeText={setUsername}
             className="mt-10 border border-gray-300 p-4 rounded-lg"
+          />
+
+          <TextInput
+            placeholder="Phone"
+            value={phone}
+            onChangeText={setphone}
+            className="mt-7 border border-gray-300 p-4 rounded-lg"
           />
 
           <TextInput

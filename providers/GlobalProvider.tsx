@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { router } from 'expo-router';
-import { account, signIn } from "../lib/appwrite";
+import { account, ID, databases, avatars } from "../lib/appwrite";
 
 const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -11,20 +11,59 @@ const GlobalProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [challengeId, setChallengeId] = useState(null);
 
+  // Register
+  async function Register(email: string, password: string, username: string, phone: string) {
+    try {
+      // Step 1: Create the user account
+      await account.create(ID.unique(), email, password, username);
+      console.log('Account created!');
+
+      // Step 2: Sign in to get session and set user
+      await account.createEmailPasswordSession(email, password);
+      const user = await account.get(); // Fetch user details after creating a session
+      setUser(user);
+
+      // Step 3: Update the user's phone number
+      await account.updatePhone(phone, password);
+      await account.createPhoneVerification();
+
+      // Step 4: Create a user document in the database
+      await databases.createDocument(
+        '66797c090028543355dd', // Database ID
+        '66797f5a0006b641046a', // Collection ID (Users)
+        ID.unique(),
+        {
+          accountId: user.$id,
+          email: email,
+          phone: phone,
+          username: username,
+          avatar: avatars.getInitials(username),
+        }
+      );
+      console.log('Document created with user details!');
+
+      // Consider the account "MFA-enabled" based on phone verification
+      console.log('Please verify your phone number to continue.');
+    } catch (error) {
+      console.error('Failed to create account:', error);
+      throw error;
+    }
+  }
+
   const signIn = async (email: string, password: string) => {
     try {
       // Attempt to sign in with email and password
       await account.createEmailPasswordSession(email, password);
-
+      const user = await account.get(); // Fetch user details
+      setUser(user);
       // Check if the user has MFA enabled
       const factors = await account.listMfaFactors();
       if (factors.totp || factors.email || factors.phone) {
         throw { type: 'user_more_factors_required' };
       }
-
       // If no exception is thrown, the user is signed in without needing MFA
       setIsLogged(true);
-      router.push('/home');
+      router.push('/');
     } catch (error) {
       if (error.type === 'user_more_factors_required') {
         try {
@@ -47,7 +86,7 @@ const GlobalProvider = ({ children }) => {
   };
 
   const signOut = async () => {
-    await account.deleteSession('current')
+    await account.deleteSession('current');
     setUser(null);
     setIsLogged(false);
     router.push('/');
@@ -67,8 +106,9 @@ const GlobalProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    account.get()
-      .then((res) => {
+    const fetchUser = async () => {
+      try {
+        const res = await account.get();
         if (res) {
           setIsLogged(true);
           setUser(res);
@@ -76,13 +116,14 @@ const GlobalProvider = ({ children }) => {
           setIsLogged(false);
           setUser(null);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.log(error);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    
+    fetchUser();
   }, []);
 
   return (
@@ -97,6 +138,7 @@ const GlobalProvider = ({ children }) => {
         loading,
         signOut,
         signIn,
+        Register,
         completeMfa
       }}
     >

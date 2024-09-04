@@ -8,7 +8,6 @@ import { useGlobalContext } from '~/providers/GlobalProvider';
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [user, setUser] = useState(null);
   const [isSubmitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false)
   const { signIn } = useGlobalContext()
@@ -20,8 +19,7 @@ export default function SignIn() {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const user = await signIn(email, password);
-      setUser(user);
+      await signIn(email, password);
       Alert.alert('Success', 'Signed in successfully!');
     } catch (error) {
       Alert.alert('Error', 'Failed to sign in.');
