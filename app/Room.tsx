@@ -1,9 +1,9 @@
 import { SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { sendMessage, getMessages, deleteMessage, client} from '../lib/appwrite';
-import { Ionicons } from '@expo/vector-icons';
 import { useGlobalContext } from '~/providers/GlobalProvider';
 import { Permission, Role } from 'react-native-appwrite';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 export default function Room() {
   const [messages, setMessages] = useState([]);
@@ -15,7 +15,7 @@ export default function Room() {
   useEffect(() => {
     fetchMessages();
 
-    const unsubscribe = client.subscribe(`databases.${'66797c090028543355dd'}.collections.${'667e783500102010cd30'}.documents`, response => {
+    const unsubscribe = client.subscribe(`databases.${'669a5a3d003d47ff98c7'}.collections.${'66d053d10001a7923c43'}.documents`, response => {
 
       if (response.events.includes("databases.*.collections.*.documents.*.create")) {
         console.log('A message was CREATED');
@@ -54,9 +54,9 @@ export default function Room() {
 
   const handleSubmit = async () => {
     const payload = {
-      user_id: user.$id,
+      user_Id: user.$id,
       username: user.name,
-      body: messageBody
+      Body: messageBody
     }
 
     const Permissions = [
@@ -126,13 +126,13 @@ export default function Room() {
                   <TouchableOpacity
                     onPress={() => handleDelete(message.$id)}
                   >
-                    <Ionicons name="trash-bin-sharp" size={24} color="black" />
+                    <FontAwesome name="trash" size={24} color="grey" />
                   </TouchableOpacity>
                   )}
 
                 </View>
                 <View className="p-4 bg-[rgba(219,26,90,1)] text-[rgb(226,227,232)] rounded-xl max-w-full">{/* message--body */}
-                  <Text>{message.body}</Text>
+                  <Text>{message.Body}</Text>
                 </View>
               </View>
             ))}

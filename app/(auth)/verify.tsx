@@ -21,7 +21,7 @@ const VerificationScreen = () => {
       const response = await account.updatePhoneVerification(user.$id,otp);
       
       Alert.alert('Verification Successful', 'Your account has been verified.');
-      router.push('/'); // Navigate to sign-in on success
+      router.push('/home'); // Navigate to sign-in on success
     } catch (error) {
       Alert.alert('Verification Failed', error.message);
       console.log(error.message);
@@ -29,7 +29,6 @@ const VerificationScreen = () => {
     }
   };
   
-
   return (
     <SafeAreaView className="h-full">
       <ScrollView contentContainerStyle={{ height: '100%' }}>

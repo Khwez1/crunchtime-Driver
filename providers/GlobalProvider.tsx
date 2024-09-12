@@ -29,15 +29,16 @@ const GlobalProvider = ({ children }) => {
 
       // Step 4: Create a user document in the database
       await databases.createDocument(
-        '66797c090028543355dd', // Database ID
-        '66797f5a0006b641046a', // Collection ID (Users)
+        '669a5a3d003d47ff98c7', // Database ID
+        '66bc885a002d237e96b9', // Collection ID (Users)
         ID.unique(),
         {
-          accountId: user.$id,
+          driverId: user.$id,
+          name: username,
           email: email,
           phone: phone,
-          username: username,
-          avatar: avatars.getInitials(username),
+          pfp: avatars.getInitials(username),
+          createdAt: new Date().toISOString()
         }
       );
       console.log('Document created with user details!');
