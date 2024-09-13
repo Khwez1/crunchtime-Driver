@@ -21,6 +21,18 @@ export default function AuthLayout() {
                 headerShown:false
                 }}
             />
+            <Stack.Screen
+              name="mfa" // Add the MFA screen here
+              options={{ 
+                headerShown: false 
+              }}
+            />
+            <Stack.Screen
+              name="verify" // Add the verify screen here
+              options={{ 
+                headerShown: false 
+              }}
+            />
         </Stack>
     </>
   )

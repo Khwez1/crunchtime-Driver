@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image, TextInpu
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { fetchProfile, updateProfile } from '../../lib/appwrite';
 import { useGlobalContext } from '~/providers/GlobalProvider';
-import { uploadPhoto, storage } from '../../lib/appwrite';
+import { uploadPhoto } from '../../lib/appwrite';
 
 export default function Profile() {
   const { user, signOut } = useGlobalContext();
@@ -11,6 +11,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [newUsername, setNewUsername] = useState('');
+  const [newEmail, setNewEmail] = useState('');
 
   // Camera-related state
   const [facing, setFacing] = useState<CameraType>('back');
@@ -42,7 +43,7 @@ export default function Profile() {
     if (!profile) return;
 
     try {
-      const updatedData = { username: newUsername };
+      const updatedData = { username: newUsername, email:newEmail };
       const response = await updateProfile(profile.$id, updatedData);
       setProfile(response);
       setEditMode(false);
@@ -64,20 +65,27 @@ export default function Profile() {
 
   const takePicture = async () => {
     if (cameraRef) {
-      const photo = await cameraRef.takePictureAsync();
-      console.log('Photo taken:', photo);
-      setIsCameraVisible(false);
-  
       try {
+        // Capture the photo using the camera reference
+        const photo = await cameraRef.takePictureAsync();
+        console.log('Photo taken:', photo);
+  
+        // Hide the camera after the photo is taken
+        setIsCameraVisible(false);
+    
+        // Upload the photo to Appwrite storage
         const uploadedFile = await uploadPhoto(photo.uri);
+    
+        // Construct the file URL for the uploaded file
+        const newPfp = `https://cloud.appwrite.io/v1/storage/buckets/669e0b5000145d872e7c/files/${uploadedFile.$id}/view`;
   
-        // Construct the file URL
-        const newAvatarUrl = `https://cloud.appwrite.io/v1/storage/buckets/66bc6f82001a5b627b81/files/${uploadedFile.$id}/view`;
+        // Update the profile with the new avatar URL
+        await updateProfile(profile.$id, { pfp: newPfp });
   
-        // Update profile with the new avatar URL
-        await updateProfile(profile.$id, { avatarUrl: newAvatarUrl });
-        setProfile({ ...profile, avatarUrl: newAvatarUrl });
-  
+        // Update local state with the new profile information
+        setProfile({ ...profile, pfp: newPfp });
+    
+        // Show success message
         Alert.alert('Success', 'Profile picture updated successfully!');
       } catch (error) {
         console.error('Failed to upload photo:', error);
@@ -86,9 +94,6 @@ export default function Profile() {
     }
   };
   
-  
-  
-
   const closeCamera = () => {
     setIsCameraVisible(false);
   };
@@ -115,20 +120,21 @@ export default function Profile() {
     <SafeAreaView>
       <ScrollView>
         <View style={{ padding: 16 }}>
-          <Image
-            source={{
-              uri: `https://cloud.appwrite.io/v1/avatars/initials?name=${encodeURIComponent(
-                profile.username
-              )}&project=66694f2c003d7561352e`,
-            }}
-            style={{ width: 96, height: 96, borderRadius: 48, marginBottom: 16 }}
-          />
+        <Image
+          source={{
+            uri: profile.pfp
+              ? `${profile.pfp}?project=66bb50ba003a365f917d&mode=admin`
+              : `https://cloud.appwrite.io/v1/avatars/initials?name=${encodeURIComponent(profile.username)}&project=66694f2c003d7561352e`,
+          }}
+          style={{ width: 96, height: 96, borderRadius: 48, marginBottom: 16 }}
+        />
           <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>
             👋Welcome! {profile.username}
           </Text>
 
           {editMode ? (
             <View style={{ marginBottom: 16 }}>
+
               <TextInput
                 style={{
                   borderWidth: 1,
@@ -141,6 +147,19 @@ export default function Profile() {
                 onChangeText={setNewUsername}
                 placeholder="New username"
               />
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                  padding: 8,
+                  borderRadius: 8,
+                  marginBottom: 8,
+                }}
+                value={newEmail}
+                onChangeText={setNewEmail}
+                placeholder="New email"
+              />
+
               <TouchableOpacity
                 style={{ backgroundColor: '#4CAF50', padding: 12, borderRadius: 8, marginBottom: 8 }}
                 onPress={handleUpdateProfile}
@@ -174,13 +193,18 @@ export default function Profile() {
           </View>
 
           <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontWeight: 'bold' }}>Account ID:</Text>
-            <Text>{profile.accountId}</Text>
+            <Text style={{ fontWeight: 'bold' }}>phone:</Text>
+            <Text>{profile.phone}</Text>
           </View>
 
           <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontWeight: 'bold' }}>Avatar:</Text>
-            <Text>{profile.avatar}</Text>
+            <Text style={{ fontWeight: 'bold' }}>Driver ID:</Text>
+            <Text>{profile.driverId}</Text>
+          </View>
+
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontWeight: 'bold' }}>Pfp:</Text>
+            <Text>{profile.pfp}</Text>
           </View>
 
 

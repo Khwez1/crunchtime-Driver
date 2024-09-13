@@ -1,11 +1,14 @@
+// Import necessary modules and components
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, Button, StyleSheet, Modal } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, Button, StyleSheet, Modal, Image } from 'react-native';
 import Mapbox, { Camera, LocationPuck, MapView, PointAnnotation } from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import axios from 'axios';
 
+// Set Mapbox access token
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_KEY || '');
 
+// Function to get location suggestions based on user input
 const getSuggestions = async (query, proximity) => {
   try {
     const response = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`, {
@@ -23,6 +26,7 @@ const getSuggestions = async (query, proximity) => {
   }
 };
 
+// Function to reverse geocode coordinates to an address
 const reverseGeocode = async (longitude, latitude) => {
   try {
     const response = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json`, {
@@ -38,7 +42,9 @@ const reverseGeocode = async (longitude, latitude) => {
   }
 };
 
+// Main DeliveryTracking component
 const DeliveryTracking = () => {
+  // State variables
   const [markerCoordinates, setMarkerCoordinates] = useState(null);
   const [markerId, setMarkerId] = useState(0);
   const [userLocation, setUserLocation] = useState(null);
@@ -46,6 +52,7 @@ const DeliveryTracking = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  // Effect hook to fetch user's current location on component mount
   useEffect(() => {
     const fetchUserLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -64,6 +71,7 @@ const DeliveryTracking = () => {
     fetchUserLocation();
   }, []);
 
+  // Handle input changes in the search box
   const handleInputChange = async (text) => {
     setQuery(text);
     if (text.length > 2) {
@@ -74,6 +82,7 @@ const DeliveryTracking = () => {
     }
   };
 
+  // Handle selection of a suggestion
   const handleSuggestionPress = (suggestion) => {
     setQuery(suggestion.place_name);
     setSuggestions([]);
@@ -82,6 +91,7 @@ const DeliveryTracking = () => {
     setIsModalVisible(false);
   };
 
+  // Handle using current location as the marker
   const handleUseCurrentLocation = async () => {
     if (userLocation) {
       setMarkerCoordinates([userLocation.longitude, userLocation.latitude]);
@@ -91,13 +101,16 @@ const DeliveryTracking = () => {
     }
   };
 
+  // Show loading text if user location is not yet available
   if (!userLocation) {
     return <Text>Loading...</Text>;
   }
 
+  // Main component render
   return (
     <View style={{ flex: 1 }}>
-      <MapView style={{ flex: 1 }} styleURL="mapbox://styles/mapbox/dark-v11">
+      {/* Mapbox map component */}
+      <MapView style={{ flex: 1 }} styleURL="mapbox://styles/mapbox/standard">
         <Camera
           centerCoordinate={markerCoordinates || [userLocation.longitude, userLocation.latitude]}
           zoomLevel={14}
@@ -106,7 +119,7 @@ const DeliveryTracking = () => {
         <LocationPuck puckBearingEnabled puckBearing="heading" pulsing={{ isEnabled: true }} />
         {markerCoordinates && (
           <PointAnnotation id={`marker-${markerId}`} coordinate={markerCoordinates}>
-            <View style={{ height: 30, width: 30, backgroundColor: 'red', borderRadius: 15 }} />
+            <Image source={require('~/assets/location_icon.png')} />
           </PointAnnotation>
         )}
       </MapView>
@@ -142,7 +155,7 @@ const DeliveryTracking = () => {
         </View>
       </Modal>
 
-      {/* Button to open the modal */}
+      {/* Button to open the search modal */}
       <TouchableOpacity style={styles.buttonContainer} onPress={() => setIsModalVisible(true)}>
         <Text style={styles.buttonText}>Search Location</Text>
       </TouchableOpacity>
@@ -155,6 +168,7 @@ const DeliveryTracking = () => {
   );
 };
 
+// Styles for the component
 const styles = StyleSheet.create({
   buttonContainer: {
     position: 'absolute',

@@ -1,64 +1,26 @@
-import { Client, Avatars, Databases, Account, ID, Query } from 'react-native-appwrite';
+import { Client, Avatars, Databases, Account, ID, Query, Storage } from 'react-native-appwrite';
+import * as FileSystem from 'expo-file-system';
+
 let client = new Client();
 let databases = new Databases(client);
 let avatars = new Avatars(client);
 let account = new Account(client);
+let storage = new Storage(client)
 
-
-export { account, databases, avatars, client };
+export { account, storage, databases, avatars, client, ID };
 
 client
   .setEndpoint("https://cloud.appwrite.io/v1")
-  .setProject("66694f2c003d7561352e")
-  // .setPlatform('com.ct-Driver.app');
-
-// Register
-export async function Register(email: string, password: string, username: string) {
-  try {
-    const user = await account.create(ID.unique(), email, password, username);
-    console.log('Account created!');
-
-    await databases.createDocument(
-      '66797c090028543355dd', // Database ID
-      '66797f5a0006b641046a', // Collection ID, Users
-      ID.unique(),
-      {
-        accountId: user.$id,
-        email: email,
-        username: username,
-        avatar: avatars.getInitials(username),
-      }
-    );
-    await signIn(email, password)
-    console.log('Document created with user details!');
-  } catch (error) {
-    console.error('Failed to create account:', error);
-    throw error;
-  }
-}
-
-
-// Sign in
-export async function signIn(email: string, password: string) {
-  try {
-    await account.createEmailPasswordSession(email, password); // Ensure this is the correct method
-    const user = await account.get();
-    console.log('User signed in:', user);
-    return user;
-  } catch (error) {
-    console.error('Failed to sign in:', error);
-    throw error;
-  }
-}
+  .setProject("66bb50ba003a365f917d")
+// .setPlatform('com.ct-Driver.app');
 
 //messaging
 // Send message
 export async function sendMessage(payload: {}, Permissions: []) {
-
   try {
     await databases.createDocument(
-      '66797c090028543355dd', // Database ID
-      '667e783500102010cd30', // Collection ID, messages
+      '669a5a3d003d47ff98c7', // Database ID
+      '66d053d10001a7923c43', // Collection ID, messages
       ID.unique(),
       payload,
       Permissions
@@ -72,8 +34,8 @@ export async function sendMessage(payload: {}, Permissions: []) {
 export async function getMessages() {
   try {
     const response = await databases.listDocuments(
-      '66797c090028543355dd', // Database ID
-      '667e783500102010cd30', // Collection ID, messages
+      '669a5a3d003d47ff98c7', // Database ID
+      '66d053d10001a7923c43', // Collection ID, messages
       [
         Query.orderDesc('$createdAt')
       ]
@@ -90,8 +52,8 @@ export async function getMessages() {
 export async function deleteMessage(message_id: string) {
   try{
     await databases.deleteDocument(
-    '66797c090028543355dd', // Database ID
-    '667e783500102010cd30',// Collection ID, messages
+    '669a5a3d003d47ff98c7', // Database ID
+    '66d053d10001a7923c43',// Collection ID, messages
     message_id)
   }catch(err){
     console.log("Couldn't delete");
@@ -102,10 +64,10 @@ export async function deleteMessage(message_id: string) {
 export async function fetchProfile(user_id: string) {
   try {
     const response = await databases.listDocuments(
-      '66797c090028543355dd', // Database ID
-      '66797f5a0006b641046a', // Collection ID, users
+      '669a5a3d003d47ff98c7', // Database ID
+      '66bc885a002d237e96b9', // Collection ID, users
       [
-        Query.equal('accountId', user_id)
+        Query.equal('driverId', user_id)
       ]
     );
     console.log(response.documents);
@@ -125,8 +87,8 @@ export async function fetchProfile(user_id: string) {
 export async function updateProfile(documentId: string, updatedData: {}) {
   try {
     const response = await databases.updateDocument(
-      '66797c090028543355dd', // Database ID
-      '66797f5a0006b641046a', // Collection ID, users
+      '669a5a3d003d47ff98c7', // Database ID
+      '66bc885a002d237e96b9', // Collection ID, users
       documentId, // Use the document.$id
       updatedData
     );
@@ -138,19 +100,41 @@ export async function updateProfile(documentId: string, updatedData: {}) {
   }
 }
 
-export async function uploadPhoto(photoUri) {
+export async function uploadPhoto(photoUri: string) {
   try {
-    // Replace 'file://' with empty string if it exists
-    const processedUri = photoUri.replace('file://', '');
+    // Log the URI to check if it's valid
+    console.log('Processed Photo URI:', photoUri);
 
-    const response = await fetch(processedUri);
-    const pfp = await response.blob();
+    // Create a FormData object to upload the file
+    const formData = new FormData();
 
-    const file = await storage.createFile(
-      '66bc6f82001a5b627b81', // Your bucket ID
-      ID.unique(),
-      pfp
-    );
+    // Append the file to the FormData with the correct fileId and file attributes
+    formData.append('fileId', ID.unique()); // Generate a unique fileId
+    formData.append('file', {
+      uri: photoUri,
+      name: `photo_${Date.now()}.jpg`, // Set a unique name
+      type: 'image/jpeg', // Set the MIME type
+    });
+
+    // Perform the file upload to Appwrite
+    const response = await fetch('https://cloud.appwrite.io/v1/storage/buckets/669e0b5000145d872e7c/files', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'X-Appwrite-Project': '66bb50ba003a365f917d',  // Replace with your Appwrite project ID
+      },
+      body: formData,
+    });
+
+    // Check if response is successful
+    if (!response.ok) {
+      const errorResponse = await response.json();
+      throw new Error(`Failed to upload file: ${errorResponse.message}`);
+    }
+
+    // Parse the response JSON if the file upload is successful
+    const file = await response.json();
+    console.log('Uploaded File:', file);
 
     return file;
   } catch (error) {
@@ -162,8 +146,8 @@ export async function uploadPhoto(photoUri) {
 export async function searchPosts(query: string) {
   try {
     const posts = await databases.listDocuments(
-      '66797c090028543355dd', // Database ID
-      '667e783500102010cd30', // Collection ID, messages
+      '669a5a3d003d47ff98c7', // Database ID
+      '', // Collection ID, messages
       [Query.search('title', query)]
     )
 
