@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, Alert, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView, ScrollView } from 'react-native';
-import { useGlobalContext } from '~/providers/GlobalProvider';
+import React, { useState } from 'react';
+import { View, Text, Alert, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+
 import OtpInput from '~/components/OTPInput';
 import { account } from '~/lib/appwrite'; // Import your configured Appwrite instance
+import { useGlobalContext } from '~/providers/GlobalProvider';
 
 const VerificationScreen = () => {
   const { user } = useGlobalContext(); // Assuming you have these in global context
@@ -16,10 +16,10 @@ const VerificationScreen = () => {
       if (!otp) {
         throw new Error('Please enter the verification code.');
       }
-  
+
       // The `updateVerification` method takes only the OTP/secret as a parameter
-      const response = await account.updatePhoneVerification(user.$id,otp);
-      
+      const response = await account.updatePhoneVerification(user.$id, otp);
+
       Alert.alert('Verification Successful', 'Your account has been verified.');
       router.push('/home'); // Navigate to sign-in on success
     } catch (error) {
@@ -28,7 +28,7 @@ const VerificationScreen = () => {
       console.log(otp);
     }
   };
-  
+
   return (
     <SafeAreaView className="h-full">
       <ScrollView contentContainerStyle={{ height: '100%' }}>

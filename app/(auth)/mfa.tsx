@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView, ScrollView } from 'react-native';
-import { useGlobalContext } from '~/providers/GlobalProvider';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  Alert,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+} from 'react-native';
+
 import OtpInput from '~/components/OTPInput';
+import { useGlobalContext } from '~/providers/GlobalProvider';
 
 const MFAScreen = () => {
   const { completeMfa } = useGlobalContext();
@@ -21,22 +30,24 @@ const MFAScreen = () => {
 
   return (
     <SafeAreaView className="h-full">
-      <ScrollView contentContainerStyle={{ height: "100%" }}>
-        <View className="w-full justify-center px-4 my-6">
-          <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginVertical: 20 }}>
+      <ScrollView contentContainerStyle={{ height: '100%' }}>
+        <View className="my-6 w-full justify-center px-4">
+          <Text
+            style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginVertical: 20 }}>
             Verify Account
           </Text>
           <Text style={{ textAlign: 'center', marginBottom: 20 }}>
             Please enter the OTP number sent to your email to reset your password
           </Text>
           <OtpInput setOtp={setOtp} />
-          <TouchableOpacity onPress={handleCompleteMFA} style={{ backgroundColor: 'red', padding: 15, borderRadius: 5, marginTop: 20 }}>
-            <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
-              Confirm
-            </Text>
+          <TouchableOpacity
+            onPress={handleCompleteMFA}
+            style={{ backgroundColor: 'red', padding: 15, borderRadius: 5, marginTop: 20 }}>
+            <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Confirm</Text>
           </TouchableOpacity>
           <Text style={{ textAlign: 'center', marginTop: 20 }}>
-            Didn't receive code? <Text style={{ color: 'red', fontWeight: 'bold' }}>Request again</Text>
+            Didn't receive code?{' '}
+            <Text style={{ color: 'red', fontWeight: 'bold' }}>Request again</Text>
           </Text>
         </View>
       </ScrollView>

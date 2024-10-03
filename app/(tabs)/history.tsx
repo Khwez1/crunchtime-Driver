@@ -1,5 +1,5 @@
-import { View, Text, SafeAreaView, ScrollView } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { View, Text, SafeAreaView, ScrollView } from 'react-native';
 
 export default function history() {
   return (
@@ -12,5 +12,5 @@ export default function history() {
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
+  );
 }

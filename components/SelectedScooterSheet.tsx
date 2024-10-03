@@ -1,19 +1,28 @@
-import { Text, View, Image } from 'react-native';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import { useScooter } from '~/providers/ScooterProvider';
-import { useEffect, useRef } from 'react';
 import { FontAwesome6 } from '@expo/vector-icons';
-import scooterImage from '~/assets/scooter.png'
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { useEffect, useRef } from 'react';
+import { Text, View, Image, Alert } from 'react-native';
+
 import { Button } from './Button';
 
+import scooterImage from '~/assets/scooter.png';
+import { databases, ID } from '~/lib/appwrite';
+import { useGlobalContext } from '~/providers/GlobalProvider';
+import { useRide } from '~/providers/RideProvider';
+import { useScooter } from '~/providers/ScooterProvider';
+
 const SelectedScooterSheet = () => {
-  const { selectedScooter, duration, distance } = useScooter();
+  const { selectedScooter, duration, distance, isNearby, setSelectedScooter } = useScooter();
 
   const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const { startDelivery } = useRide();
 
   useEffect(() => {
     if (selectedScooter) {
       bottomSheetRef.current?.expand();
+    } else {
+      bottomSheetRef.current?.close();
     }
   }, [selectedScooter]);
 
@@ -23,6 +32,7 @@ const SelectedScooterSheet = () => {
       index={-1}
       snapPoints={[200]}
       enablePanDownToClose
+      onClose={() => setSelectedScooter(undefined)}
       backgroundStyle={{ backgroundColor: '#414442' }}>
       {selectedScooter && (
         <BottomSheetView style={{ flex: 1, padding: 10, gap: 20 }}>
@@ -64,7 +74,11 @@ const SelectedScooterSheet = () => {
           </View>
           {/* Bottom part */}
           <View>
-            <Button title='start' />
+            <Button
+              onPress={() => startDelivery(selectedScooter.$id)}
+              title="start"
+              disabled={!isNearby}
+            />
           </View>
         </BottomSheetView>
       )}

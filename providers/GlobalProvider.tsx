@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
 import { router } from 'expo-router';
-import { account, ID, databases, avatars } from "../lib/appwrite";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+
+import { account, ID, databases, functions } from '../lib/appwrite';
 
 const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -34,11 +35,11 @@ const GlobalProvider = ({ children }) => {
         ID.unique(),
         {
           driverId: user.$id,
-          name: username,
-          email: email,
-          phone: phone,
-          pfp: avatars.getInitials(username),
-          createdAt: new Date().toISOString()
+          username,
+          email,
+          phone,
+          createdAt: user.$createdAt,
+          updatedAt: user.$updatedAt,
         }
       );
       console.log('Document created with user details!');
@@ -48,6 +49,25 @@ const GlobalProvider = ({ children }) => {
     } catch (error) {
       console.error('Failed to create account:', error);
       throw error;
+    }
+  }
+
+  //Delete user
+  async function deleteUser(userId) {
+    try {
+      const result = await functions.createExecution(
+        '66e81c81000b77b6beae',
+        JSON.stringify({ userId })
+      );
+      console.log('Function response:', result);
+      const response = await databases.deleteDocument(
+        '669a5a3d003d47ff98c7', // Database ID
+        '66bc885a002d237e96b9', // Collection ID, users
+        userId
+      );
+      signOut();
+    } catch (error) {
+      console.error('Error executing function:', error);
     }
   }
 
@@ -123,7 +143,7 @@ const GlobalProvider = ({ children }) => {
         setLoading(false);
       }
     };
-    
+
     fetchUser();
   }, []);
 
@@ -140,9 +160,9 @@ const GlobalProvider = ({ children }) => {
         signOut,
         signIn,
         Register,
-        completeMfa
-      }}
-    >
+        completeMfa,
+        deleteUser,
+      }}>
       {children}
     </GlobalContext.Provider>
   );

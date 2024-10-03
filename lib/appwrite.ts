@@ -1,22 +1,28 @@
-import { Client, Avatars, Databases, Account, ID, Query, Storage } from 'react-native-appwrite';
-import * as FileSystem from 'expo-file-system';
+import {
+  Client,
+  Avatars,
+  Databases,
+  Account,
+  ID,
+  Query,
+  Storage,
+  Functions,
+} from 'react-native-appwrite';
 
-let client = new Client();
-let databases = new Databases(client);
-let avatars = new Avatars(client);
-let account = new Account(client);
-let storage = new Storage(client)
+const client = new Client();
+const databases = new Databases(client);
+const avatars = new Avatars(client);
+const account = new Account(client);
+const storage = new Storage(client);
+const functions = new Functions(client);
 
-export { account, storage, databases, avatars, client, ID };
+export { account, functions, storage, databases, avatars, client, ID, Query };
 
-client
-  .setEndpoint("https://cloud.appwrite.io/v1")
-  .setProject("66bb50ba003a365f917d")
-// .setPlatform('com.ct-Driver.app');
+client.setEndpoint('https://cloud.appwrite.io/v1').setProject('66bb50ba003a365f917d');
 
 //messaging
 // Send message
-export async function sendMessage(payload: {}, Permissions: []) {
+export async function sendMessage(payload: object, Permissions: []) {
   try {
     await databases.createDocument(
       '669a5a3d003d47ff98c7', // Database ID
@@ -36,9 +42,7 @@ export async function getMessages() {
     const response = await databases.listDocuments(
       '669a5a3d003d47ff98c7', // Database ID
       '66d053d10001a7923c43', // Collection ID, messages
-      [
-        Query.orderDesc('$createdAt')
-      ]
+      [Query.orderDesc('$createdAt')]
     );
     console.log('RESPONSE:', response);
     return response.documents;
@@ -50,12 +54,13 @@ export async function getMessages() {
 
 //Delete message
 export async function deleteMessage(message_id: string) {
-  try{
+  try {
     await databases.deleteDocument(
-    '669a5a3d003d47ff98c7', // Database ID
-    '66d053d10001a7923c43',// Collection ID, messages
-    message_id)
-  }catch(err){
+      '669a5a3d003d47ff98c7', // Database ID
+      '66d053d10001a7923c43', // Collection ID, messages
+      message_id
+    );
+  } catch (err) {
     console.log("Couldn't delete");
   }
 }
@@ -66,25 +71,23 @@ export async function fetchProfile(user_id: string) {
     const response = await databases.listDocuments(
       '669a5a3d003d47ff98c7', // Database ID
       '66bc885a002d237e96b9', // Collection ID, users
-      [
-        Query.equal('driverId', user_id)
-      ]
+      [Query.equal('driverId', user_id)]
     );
     console.log(response.documents);
     if (response.documents.length > 0) {
-      console.log("User document retrieved:", response.documents[0]);
+      console.log('User document retrieved:', response.documents[0]);
       return response.documents[0];
     } else {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
   } catch (error) {
-    console.log("Error fetching user info:", error.message);
+    console.log('Error fetching user info:', error.message);
     throw error;
   }
 }
 
 // Update user details for the logged-in user
-export async function updateProfile(documentId: string, updatedData: {}) {
+export async function updateProfile(documentId: string, updatedData: object) {
   try {
     const response = await databases.updateDocument(
       '669a5a3d003d47ff98c7', // Database ID
@@ -92,10 +95,10 @@ export async function updateProfile(documentId: string, updatedData: {}) {
       documentId, // Use the document.$id
       updatedData
     );
-    console.log("User profile updated successfully");
+    console.log('User profile updated successfully');
     return response;
   } catch (error) {
-    console.log("Failed to update user info", error);
+    console.log('Failed to update user info', error);
     throw error;
   }
 }
@@ -117,14 +120,17 @@ export async function uploadPhoto(photoUri: string) {
     });
 
     // Perform the file upload to Appwrite
-    const response = await fetch('https://cloud.appwrite.io/v1/storage/buckets/669e0b5000145d872e7c/files', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'X-Appwrite-Project': '66bb50ba003a365f917d',  // Replace with your Appwrite project ID
-      },
-      body: formData,
-    });
+    const response = await fetch(
+      'https://cloud.appwrite.io/v1/storage/buckets/669e0b5000145d872e7c/files',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-Appwrite-Project': '66bb50ba003a365f917d', // Replace with your Appwrite project ID
+        },
+        body: formData,
+      }
+    );
 
     // Check if response is successful
     if (!response.ok) {
@@ -149,10 +155,9 @@ export async function searchPosts(query: string) {
       '669a5a3d003d47ff98c7', // Database ID
       '', // Collection ID, messages
       [Query.search('title', query)]
-    )
-
-    return posts.documents
+    );
+    return posts.documents;
   } catch (err) {
-    throw new Error (err)
+    throw new Error(err);
   }
 }
