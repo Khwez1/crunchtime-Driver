@@ -1,12 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image, TextInput, Alert, StyleSheet } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { fetchProfile, updateProfile } from '../../lib/appwrite';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+  Image,
+  TextInput,
+  Alert,
+  StyleSheet,
+} from 'react-native';
+
+import { fetchProfile, updateProfile, uploadPhoto } from '../../lib/appwrite';
+
 import { useGlobalContext } from '~/providers/GlobalProvider';
-import { uploadPhoto } from '../../lib/appwrite';
 
 export default function Profile() {
-  const { user, signOut } = useGlobalContext();
+  const { user, signOut, deleteUser } = useGlobalContext();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -33,7 +44,7 @@ export default function Profile() {
       setProfile(fetchedProfile);
       setNewUsername(fetchedProfile.username);
     } catch (error) {
-      console.error("Failed to fetch profile:", error);
+      console.error('Failed to fetch profile:', error);
     } finally {
       setLoading(false);
     }
@@ -43,13 +54,13 @@ export default function Profile() {
     if (!profile) return;
 
     try {
-      const updatedData = { username: newUsername, email:newEmail };
+      const updatedData = { username: newUsername, email: newEmail };
       const response = await updateProfile(profile.$id, updatedData);
       setProfile(response);
       setEditMode(false);
       Alert.alert('Success', 'Profile updated successfully');
     } catch (error) {
-      console.error("Failed to update profile:", error);
+      console.error('Failed to update profile:', error);
       Alert.alert('Error', 'Failed to update profile');
     }
   };
@@ -69,22 +80,22 @@ export default function Profile() {
         // Capture the photo using the camera reference
         const photo = await cameraRef.takePictureAsync();
         console.log('Photo taken:', photo);
-  
+
         // Hide the camera after the photo is taken
         setIsCameraVisible(false);
-    
+
         // Upload the photo to Appwrite storage
         const uploadedFile = await uploadPhoto(photo.uri);
-    
+
         // Construct the file URL for the uploaded file
         const newPfp = `https://cloud.appwrite.io/v1/storage/buckets/669e0b5000145d872e7c/files/${uploadedFile.$id}/view`;
-  
+
         // Update the profile with the new avatar URL
         await updateProfile(profile.$id, { pfp: newPfp });
-  
+
         // Update local state with the new profile information
         setProfile({ ...profile, pfp: newPfp });
-    
+
         // Show success message
         Alert.alert('Success', 'Profile picture updated successfully!');
       } catch (error) {
@@ -93,7 +104,7 @@ export default function Profile() {
       }
     }
   };
-  
+
   const closeCamera = () => {
     setIsCameraVisible(false);
   };
@@ -120,21 +131,20 @@ export default function Profile() {
     <SafeAreaView>
       <ScrollView>
         <View style={{ padding: 16 }}>
-        <Image
-          source={{
-            uri: profile.pfp
-              ? `${profile.pfp}?project=66bb50ba003a365f917d&mode=admin`
-              : `https://cloud.appwrite.io/v1/avatars/initials?name=${encodeURIComponent(profile.username)}&project=66694f2c003d7561352e`,
-          }}
-          style={{ width: 96, height: 96, borderRadius: 48, marginBottom: 16 }}
-        />
+          <Image
+            source={{
+              uri: profile.pfp
+                ? `${profile.pfp}?project=66bb50ba003a365f917d&mode=admin`
+                : `https://cloud.appwrite.io/v1/avatars/initials?name=${encodeURIComponent(profile.username)}&project=66694f2c003d7561352e`,
+            }}
+            style={{ width: 96, height: 96, borderRadius: 48, marginBottom: 16 }}
+          />
           <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>
             👋Welcome! {profile.username}
           </Text>
 
           {editMode ? (
             <View style={{ marginBottom: 16 }}>
-
               <TextInput
                 style={{
                   borderWidth: 1,
@@ -161,23 +171,25 @@ export default function Profile() {
               />
 
               <TouchableOpacity
-                style={{ backgroundColor: '#4CAF50', padding: 12, borderRadius: 8, marginBottom: 8 }}
-                onPress={handleUpdateProfile}
-              >
+                style={{
+                  backgroundColor: '#4CAF50',
+                  padding: 12,
+                  borderRadius: 8,
+                  marginBottom: 8,
+                }}
+                onPress={handleUpdateProfile}>
                 <Text style={{ color: '#fff', textAlign: 'center' }}>Save Changes</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ backgroundColor: '#f0f0f0', padding: 12, borderRadius: 8 }}
-                onPress={() => setEditMode(false)}
-              >
+                onPress={() => setEditMode(false)}>
                 <Text style={{ textAlign: 'center' }}>Cancel</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity
               style={{ backgroundColor: '#2196F3', padding: 12, borderRadius: 8, marginBottom: 16 }}
-              onPress={() => setEditMode(true)}
-            >
+              onPress={() => setEditMode(true)}>
               <Text style={{ color: '#fff', textAlign: 'center' }}>Edit Profile</Text>
             </TouchableOpacity>
           )}
@@ -207,13 +219,20 @@ export default function Profile() {
             <Text>{profile.pfp}</Text>
           </View>
 
-
-
+          {/* Button to log Out */}
           <TouchableOpacity
             style={{ backgroundColor: '#f44336', padding: 16, borderRadius: 8, marginTop: 16 }}
-            onPress={() => signOut()}
-          >
+            onPress={() => signOut()}>
             <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>Log Out</Text>
+          </TouchableOpacity>
+
+          {/* Button to DeleteUser */}
+          <TouchableOpacity
+            style={{ backgroundColor: '#f44336', padding: 16, borderRadius: 8, marginTop: 16 }}
+            onPress={() => deleteUser(user.$id)}>
+            <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
+              Delete User
+            </Text>
           </TouchableOpacity>
 
           {/* Button to open camera */}
@@ -225,8 +244,7 @@ export default function Profile() {
               marginTop: 16,
               alignItems: 'center',
             }}
-            onPress={openCamera}
-          >
+            onPress={openCamera}>
             <Text style={{ color: '#fff' }}>Open Camera</Text>
           </TouchableOpacity>
 
@@ -236,8 +254,7 @@ export default function Profile() {
               <CameraView
                 style={{ width: '100%', height: 300 }}
                 facing={facing}
-                ref={(ref) => setCameraRef(ref)}
-              >
+                ref={(ref) => setCameraRef(ref)}>
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity style={styles.cameraButton} onPress={takePicture}>
                     <Text style={styles.text}>Take Picture</Text>
@@ -245,7 +262,9 @@ export default function Profile() {
                   <TouchableOpacity style={styles.cameraButton} onPress={closeCamera}>
                     <Text style={styles.text}>Close Camera</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.cameraButton} onPress={() => setFacing(facing === 'back' ? 'front' : 'back')}>
+                  <TouchableOpacity
+                    style={styles.cameraButton}
+                    onPress={() => setFacing(facing === 'back' ? 'front' : 'back')}>
                     <Text style={styles.text}>Flip Camera</Text>
                   </TouchableOpacity>
                 </View>

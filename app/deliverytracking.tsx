@@ -1,9 +1,19 @@
 // Import necessary modules and components
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, Button, StyleSheet, Modal, Image } from 'react-native';
 import Mapbox, { Camera, LocationPuck, MapView, PointAnnotation } from '@rnmapbox/maps';
-import * as Location from 'expo-location';
 import axios from 'axios';
+import * as Location from 'expo-location';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  Button,
+  StyleSheet,
+  Modal,
+  Image,
+} from 'react-native';
 
 // Set Mapbox access token
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_KEY || '');
@@ -11,14 +21,17 @@ Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_KEY || '');
 // Function to get location suggestions based on user input
 const getSuggestions = async (query, proximity) => {
   try {
-    const response = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`, {
-      params: {
-        access_token: process.env.EXPO_PUBLIC_MAPBOX_KEY || '',
-        autocomplete: true,
-        limit: 5,
-        proximity: `${proximity.longitude},${proximity.latitude}`
+    const response = await axios.get(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`,
+      {
+        params: {
+          access_token: process.env.EXPO_PUBLIC_MAPBOX_KEY || '',
+          autocomplete: true,
+          limit: 5,
+          proximity: `${proximity.longitude},${proximity.latitude}`,
+        },
       }
-    });
+    );
     return response.data.features;
   } catch (error) {
     console.error('Error fetching suggestions:', error);
@@ -29,11 +42,14 @@ const getSuggestions = async (query, proximity) => {
 // Function to reverse geocode coordinates to an address
 const reverseGeocode = async (longitude, latitude) => {
   try {
-    const response = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json`, {
-      params: {
-        access_token: process.env.EXPO_PUBLIC_MAPBOX_KEY || ''
+    const response = await axios.get(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json`,
+      {
+        params: {
+          access_token: process.env.EXPO_PUBLIC_MAPBOX_KEY || '',
+        },
       }
-    });
+    );
     const address = response.data.features[0]?.place_name;
     return address;
   } catch (error) {
@@ -64,7 +80,7 @@ const DeliveryTracking = () => {
       const location = await Location.getCurrentPositionAsync({});
       setUserLocation({
         latitude: location.coords.latitude,
-        longitude: location.coords.longitude
+        longitude: location.coords.longitude,
       });
     };
 
@@ -87,7 +103,7 @@ const DeliveryTracking = () => {
     setQuery(suggestion.place_name);
     setSuggestions([]);
     setMarkerCoordinates(suggestion.geometry.coordinates);
-    setMarkerId(prevId => prevId + 1);
+    setMarkerId((prevId) => prevId + 1);
     setIsModalVisible(false);
   };
 
@@ -95,7 +111,7 @@ const DeliveryTracking = () => {
   const handleUseCurrentLocation = async () => {
     if (userLocation) {
       setMarkerCoordinates([userLocation.longitude, userLocation.latitude]);
-      setMarkerId(prevId => prevId + 1);
+      setMarkerId((prevId) => prevId + 1);
       const address = await reverseGeocode(userLocation.longitude, userLocation.latitude);
       setQuery(address);
     }
@@ -127,10 +143,9 @@ const DeliveryTracking = () => {
       {/* Modal for search input */}
       <Modal
         visible={isModalVisible}
-        transparent={true}
+        transparent
         animationType="slide"
-        onRequestClose={() => setIsModalVisible(false)}
-      >
+        onRequestClose={() => setIsModalVisible(false)}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <TextInput
@@ -161,7 +176,9 @@ const DeliveryTracking = () => {
       </TouchableOpacity>
 
       {/* Button for using current location */}
-      <TouchableOpacity style={[styles.buttonContainer, { bottom: 70 }]} onPress={handleUseCurrentLocation}>
+      <TouchableOpacity
+        style={[styles.buttonContainer, { bottom: 70 }]}
+        onPress={handleUseCurrentLocation}>
         <Text style={styles.buttonText}>Use Current Location</Text>
       </TouchableOpacity>
     </View>

@@ -38,7 +38,7 @@ const OtpInput = ({ setOtp }) => {
   };
 
   return (
-    <View className="flex flex-row justify-between items-center my-5 px-5">
+    <View className="my-5 flex flex-row items-center justify-between px-5">
       {otp.map((_, index) => (
         <TextInput
           key={index}
@@ -46,10 +46,10 @@ const OtpInput = ({ setOtp }) => {
           onChangeText={(text) => handleChange(text, index)}
           onKeyPress={(e) => handleKeyPress(e, index)}
           onPaste={handlePaste}
-          className="w-10 h-12 border-2 border-red-500 rounded-lg text-center text-xl"
+          className="h-12 w-10 rounded-lg border-2 border-red-500 text-center text-xl"
           keyboardType="numeric"
           maxLength={1}
-          ref={(ref) => inputs.current[index] = ref}
+          ref={(ref) => (inputs.current[index] = ref)}
         />
       ))}
     </View>

@@ -1,19 +1,21 @@
-import { ShapeSource, SymbolLayer, Images, CircleLayer } from "@rnmapbox/maps";
-import { featureCollection, point } from '@turf/helpers'
-import { OnPressEvent } from "@rnmapbox/maps/lib/typescript/src/types/OnPressEvent";
-import { useScooter } from '~/providers/ScooterProvider';
+import { ShapeSource, SymbolLayer, Images, CircleLayer } from '@rnmapbox/maps';
+import { OnPressEvent } from '@rnmapbox/maps/lib/typescript/src/types/OnPressEvent';
+import { featureCollection, point } from '@turf/helpers';
+
 import pin from '~/assets/pin.png';
-import scooters from '~/data/scooters.json'
+import { useScooter } from '~/providers/ScooterProvider';
+// import scooters from '~/data/scooters.json';
 
 const ScooterMarkers = () => {
-    const { setSelectedScooter } = useScooter();
-    const points = scooters.map(scooter => point([scooter.long, scooter.lat], { scooter }))
+  const { setSelectedScooter, nearbyScooters } = useScooter();
 
-    const onPointPress = async (event: OnPressEvent) => {
-        if(event.features[0].properties?.scooter) {
-          setSelectedScooter(event.features[0].properties.scooter);
-        }
-    };
+  const points = nearbyScooters.map((scooter) => point([scooter.long, scooter.lat], { scooter }));
+
+  const onPointPress = async (event: OnPressEvent) => {
+    if (event.features[0].properties?.scooter) {
+      setSelectedScooter(event.features[0].properties.scooter);
+    }
+  };
 
   return (
     <ShapeSource id="scooter" cluster shape={featureCollection(points)} onPress={onPointPress}>
@@ -55,6 +57,6 @@ const ScooterMarkers = () => {
       <Images images={{ pin }} />
     </ShapeSource>
   );
-}
+};
 
-export default ScooterMarkers
+export default ScooterMarkers;
