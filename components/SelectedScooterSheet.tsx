@@ -26,6 +26,7 @@ const SelectedScooterSheet = () => {
     }
   }, [selectedScooter]);
 
+
   return (
     <BottomSheet
       ref={bottomSheetRef}
@@ -75,8 +76,11 @@ const SelectedScooterSheet = () => {
           {/* Bottom part */}
           <View>
             <Button
-              onPress={() => startDelivery(selectedScooter.$id)}
               title="start"
+              onPress={() => {
+                startDelivery(selectedScooter.$id)
+                setSelectedScooter(undefined)
+              }}
               disabled={!isNearby}
             />
           </View>

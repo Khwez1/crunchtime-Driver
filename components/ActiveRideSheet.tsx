@@ -3,13 +3,15 @@ import { useEffect, useRef } from 'react';
 import { Text } from 'react-native';
 import { Button } from './Button';
 import { useRide } from '~/providers/RideProvider';
+import { useScooter } from '~/providers/ScooterProvider';
 
 export default function ActiveRideSheet() {
   const { ride, finishRide } = useRide();
+  const { setSelectedScooter } = useScooter();
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   useEffect(() =>{
-    if(ride){
+    if(ride) {
       bottomSheetRef.current?.expand();
     } else {
       bottomSheetRef.current?.close();
@@ -28,10 +30,9 @@ export default function ActiveRideSheet() {
           <Text>Ride in progress</Text>
 
           <Button
-            onPress={() => finishRide(ride.$id)}
+            onPress={() => finishRide()}
             title="Finish delivery"
           />
-
         </BottomSheetView>
       )}
     </BottomSheet>

@@ -20,6 +20,7 @@ export default function RootLayout() {
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="search/[query]" />
+              <Stack.Screen name="orderDelivery/[id]" />
               <Stack.Screen name="Room" />
             </Stack>
           </RideProvider>

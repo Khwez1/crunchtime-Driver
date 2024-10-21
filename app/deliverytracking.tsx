@@ -123,66 +123,66 @@ const DeliveryTracking = () => {
   }
 
   // Main component render
-  return (
-    <View style={{ flex: 1 }}>
-      {/* Mapbox map component */}
-      <MapView style={{ flex: 1 }} styleURL="mapbox://styles/mapbox/standard">
-        <Camera
-          centerCoordinate={markerCoordinates || [userLocation.longitude, userLocation.latitude]}
-          zoomLevel={14}
-          animationDuration={1000}
-        />
-        <LocationPuck puckBearingEnabled puckBearing="heading" pulsing={{ isEnabled: true }} />
-        {markerCoordinates && (
-          <PointAnnotation id={`marker-${markerId}`} coordinate={markerCoordinates}>
-            <Image source={require('~/assets/location_icon.png')} />
-          </PointAnnotation>
-        )}
-      </MapView>
+  // return (
+  //   <View style={{ flex: 1 }}>
+  //     {/* Mapbox map component */}
+  //     <MapView style={{ flex: 1 }} styleURL="mapbox://styles/mapbox/standard">
+  //       <Camera
+  //         centerCoordinate={markerCoordinates || [userLocation.longitude, userLocation.latitude]}
+  //         zoomLevel={14}
+  //         animationDuration={1000}
+  //       />
+  //       <LocationPuck puckBearingEnabled puckBearing="heading" pulsing={{ isEnabled: true }} />
+  //       {markerCoordinates && (
+  //         <PointAnnotation id={`marker-${markerId}`} coordinate={markerCoordinates}>
+  //           <Image source={require('~/assets/location_icon.png')} />
+  //         </PointAnnotation>
+  //       )}
+  //     </MapView>
 
-      {/* Modal for search input */}
-      <Modal
-        visible={isModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setIsModalVisible(false)}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <TextInput
-              value={query}
-              onChangeText={handleInputChange}
-              placeholder="Enter an address"
-              style={styles.textInput}
-            />
-            {suggestions.length > 0 && (
-              <FlatList
-                data={suggestions}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => handleSuggestionPress(item)}>
-                    <Text style={styles.suggestionText}>{item.place_name}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-            )}
-            <Button title="Close" onPress={() => setIsModalVisible(false)} />
-          </View>
-        </View>
-      </Modal>
+  //     {/* Modal for search input */}
+  //     <Modal
+  //       visible={isModalVisible}
+  //       transparent
+  //       animationType="slide"
+  //       onRequestClose={() => setIsModalVisible(false)}>
+  //       <View style={styles.modalContainer}>
+  //         <View style={styles.modalContent}>
+  //           <TextInput
+  //             value={query}
+  //             onChangeText={handleInputChange}
+  //             placeholder="Enter an address"
+  //             style={styles.textInput}
+  //           />
+  //           {suggestions.length > 0 && (
+  //             <FlatList
+  //               data={suggestions}
+  //               keyExtractor={(item) => item.id}
+  //               renderItem={({ item }) => (
+  //                 <TouchableOpacity onPress={() => handleSuggestionPress(item)}>
+  //                   <Text style={styles.suggestionText}>{item.place_name}</Text>
+  //                 </TouchableOpacity>
+  //               )}
+  //             />
+  //           )}
+  //           <Button title="Close" onPress={() => setIsModalVisible(false)} />
+  //         </View>
+  //       </View>
+  //     </Modal>
 
-      {/* Button to open the search modal */}
-      <TouchableOpacity style={styles.buttonContainer} onPress={() => setIsModalVisible(true)}>
-        <Text style={styles.buttonText}>Search Location</Text>
-      </TouchableOpacity>
+  //     {/* Button to open the search modal */}
+  //     <TouchableOpacity style={styles.buttonContainer} onPress={() => setIsModalVisible(true)}>
+  //       <Text style={styles.buttonText}>Search Location</Text>
+  //     </TouchableOpacity>
 
-      {/* Button for using current location */}
-      <TouchableOpacity
-        style={[styles.buttonContainer, { bottom: 70 }]}
-        onPress={handleUseCurrentLocation}>
-        <Text style={styles.buttonText}>Use Current Location</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  //     {/* Button for using current location */}
+  //     <TouchableOpacity
+  //       style={[styles.buttonContainer, { bottom: 70 }]}
+  //       onPress={handleUseCurrentLocation}>
+  //       <Text style={styles.buttonText}>Use Current Location</Text>
+  //     </TouchableOpacity>
+  //   </View>
+  // );
 };
 
 // Styles for the component

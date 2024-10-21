@@ -1,5 +1,6 @@
-import React, { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
-import { View, Text, Alert } from 'react-native';
+import * as Location from 'expo-location';
+import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 
 import { useGlobalContext } from './GlobalProvider';
 
@@ -17,12 +18,15 @@ export default function RideProvider({ children }: PropsWithChildren) {
       const response = await databases.listDocuments(
         '669a5a3d003d47ff98c7',
         '66fd52ac0039a5595558',
-        [Query.equal('driverId', user.$id), Query.equal('status', 'inProgress')]
+        [
+          Query.equal('driverId', user.$id), 
+          Query.equal('status', 'inProgress')
+        ]
       );
       if (response.total > 0) {
         setRide(response);
       }else{
-        setRide(null)
+        setRide(undefined)
       }
     };
 
@@ -30,6 +34,46 @@ export default function RideProvider({ children }: PropsWithChildren) {
       fetchActiveRide();
     }
   }, [user]);
+
+  useEffect(() => {
+    let subscription: Location.LocationSubscription | undefined;
+  
+    const watchLocation = async () => {
+      try {
+        // Start watching the driver's position
+        subscription = await Location.watchPositionAsync(
+          { distanceInterval: 100, accuracy: Location.Accuracy.High },
+          async (location) => {
+            const { latitude, longitude } = location.coords;
+            try {
+              await databases.updateDocument(
+                '669a5a3d003d47ff98c7',
+                '66fd52ac0039a5595558',
+                ride.$id,
+                {
+                  driverLong: longitude,
+                  driverLat: latitude,
+                }
+              );
+            } catch (error) {
+              console.error('Error updating driver location:', error);
+            }
+          }
+        );
+      } catch (error) {
+        console.error('Error starting location tracking:', error);
+      }
+    };
+  
+    if (ride) {
+      watchLocation();
+    }
+  
+    // Clean up the location tracking when the ride ends or if the component unmounts
+    return () => {
+      subscription?.remove();
+    };
+  }, [ride]);
 
   const startDelivery = async (scooterId: string) => {
     if (ride) {
@@ -58,28 +102,33 @@ export default function RideProvider({ children }: PropsWithChildren) {
   };
 
   const finishRide = async () => {
-    if(!ride) {
+    if (!ride) {
       return;
     }
-    const response = await databases.updateDocument(
-      '669a5a3d003d47ff98c7',
-      '66fd52ac0039a5595558',
-      ride.$id,
-      {
-        status: 'Delivered',
-        finishedAt: new Date().toISOString()
-      }
-    )
-    if(error) {
-      Alert.alert('Failed to finish the ride')
-    } else {
-      setRide(null);
+    try {
+      const response = await databases.updateDocument(
+        '669a5a3d003d47ff98c7',
+        '66fd52ac0039a5595558',
+        ride.$id,
+        {
+          status: 'Delivered',
+          finishedAt: new Date().toISOString()
+        }
+      );
+      setRide(undefined);
+    } catch (error) {
+      Alert.alert('Failed to finish the ride');
+      console.error(error); // Log the error for debugging
     }
-  }
+  };
 
   console.log('Current ride: ', ride);
 
-  return <RideContext.Provider value={{ startDelivery, finishRide, ride }}>{children}</RideContext.Provider>;
+  return ( 
+    <RideContext.Provider value={{ startDelivery, finishRide, ride }}>
+      {children}
+    </RideContext.Provider>
+  );
 }
 
 export const useRide = () => useContext(RideContext);
