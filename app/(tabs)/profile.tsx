@@ -12,13 +12,12 @@ import {
   StyleSheet,
 } from 'react-native';
 
-import { fetchProfile, updateProfile, uploadPhoto } from '../../lib/appwrite';
+import { updateProfile, uploadPhoto } from '../../lib/appwrite';
 
 import { useGlobalContext } from '~/providers/GlobalProvider';
 
 export default function Profile() {
-  const { user, signOut, deleteUser } = useGlobalContext();
-  const [profile, setProfile] = useState(null);
+  const { user, profile, setProfile, fetchUserProfile, signOut, deleteUser } = useGlobalContext();
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [newUsername, setNewUsername] = useState('');
@@ -31,24 +30,22 @@ export default function Profile() {
   const [cameraRef, setCameraRef] = useState(null);
 
   useEffect(() => {
-    if (user && user.$id) {
-      getProfile(user.$id);
-    } else {
-      setLoading(false);
-    }
+    const loadProfile = async () => {
+      if (user && user.$id) {
+        try {
+          setLoading(true);
+          await fetchUserProfile(user.$id);
+          setNewUsername(profile?.username || '');
+          setNewEmail(profile?.email || '');
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+    loadProfile();
   }, [user]);
-
-  const getProfile = async (userId) => {
-    try {
-      const fetchedProfile = await fetchProfile(userId);
-      setProfile(fetchedProfile);
-      setNewUsername(fetchedProfile.username);
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleUpdateProfile = async () => {
     if (!profile) return;

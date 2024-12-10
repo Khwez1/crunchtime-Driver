@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
-import { account, ID, databases, functions } from '../lib/appwrite';
+import { account, ID, databases, fetchProfile, functions } from '../lib/appwrite';
 
 const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -11,6 +11,18 @@ const GlobalProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [challengeId, setChallengeId] = useState(null);
+  const [profile, setProfile] = useState(null);
+
+  const fetchUserProfile = async (userId) => {
+    try {
+      const fetchedProfile = await fetchProfile(userId);
+      setProfile(fetchedProfile);
+      return fetchedProfile; // Return fetched profile for direct usage
+    } catch (error) {
+      console.error('Failed to fetch profile:', error);
+      throw error;
+    }
+  };
 
   // Register
   async function Register(email: string, password: string, username: string, phone: string) {
@@ -71,37 +83,38 @@ const GlobalProvider = ({ children }) => {
     }
   }
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email, password) => {
     try {
-      // Attempt to sign in with email and password
+      // Step 1: Attempt to sign in with email and password
       await account.createEmailPasswordSession(email, password);
-      const user = await account.get(); // Fetch user details
-      setUser(user);
-      // Check if the user has MFA enabled
+  
+      // Step 2: Check if the user has MFA factors enabled
       const factors = await account.listMfaFactors();
       if (factors.totp || factors.email || factors.phone) {
+        // Throw an error if MFA is required
         throw { type: 'user_more_factors_required' };
       }
-      // If no exception is thrown, the user is signed in without needing MFA
+  
+      // If no MFA is needed, log the user in directly
+      const user = await account.get();
+      setUser(user);
       setIsLogged(true);
-      router.push('/');
+      router.push('/home'); // Directly navigate to home if no MFA is needed
+  
     } catch (error) {
       if (error.type === 'user_more_factors_required') {
         try {
-          // If more factors are required, create an MFA challenge using phone
+          // Step 3: If MFA is required, create an MFA challenge using phone
           const challenge = await account.createMfaChallenge('phone');
-          // Store the challenge ID for later use
-          setChallengeId(challenge.$id);
-          // Notify the user and redirect to the MFA screen
-          console.log('OTP Sent', 'Please check your phone for the OTP.');
-          router.push('/mfa');
+          setChallengeId(challenge.$id); // Store the challenge ID
+          router.push('/mfa'); // Navigate to the MFA screen
         } catch (mfaError) {
           console.error('Failed to create MFA challenge:', mfaError);
-          throw mfaError;
+          Alert.alert('MFA Error', 'Unable to create MFA challenge. Please try again.');
         }
       } else {
         console.error('Failed to sign in:', error);
-        throw error;
+        Alert.alert('Sign-In Error', 'Failed to sign in. Please check your credentials.');
       }
     }
   };
@@ -113,16 +126,18 @@ const GlobalProvider = ({ children }) => {
     router.push('/');
   };
 
-  const completeMfa = async (otp: string) => {
+  const completeMfa = async (otp) => {
     try {
-      const response = await account.updateMfaChallenge(challengeId, otp);
-      // Successfully authenticated
-      console.log('Success', 'You have been authenticated successfully.');
-      setIsLogged(true);
-      router.push('/home');
+      // Complete MFA challenge with the OTP
+      await account.updateMfaChallenge(challengeId, otp);
+      // Fetch user details and set them in context after successful OTP verification
+      const user = await account.get();
+      setUser(user);
+      setIsLogged(true); // Now set the user as logged in
+      router.push('/home'); // Navigate to home upon successful verification
     } catch (error) {
       console.error('Failed to complete MFA challenge:', error);
-      console.log('Error', 'Failed to verify OTP. Please try again.');
+      throw new Error('Failed to verify OTP. Please try again.');
     }
   };
 
@@ -133,6 +148,7 @@ const GlobalProvider = ({ children }) => {
         if (res) {
           setIsLogged(true);
           setUser(res);
+          await fetchUserProfile(res.$id);
         } else {
           setIsLogged(false);
           setUser(null);
@@ -155,6 +171,9 @@ const GlobalProvider = ({ children }) => {
         isLogged,
         setIsLogged,
         user,
+        profile,
+        setProfile,
+        fetchUserProfile,
         setUser,
         loading,
         signOut,
