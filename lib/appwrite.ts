@@ -149,6 +149,163 @@ export async function uploadPhoto(photoUri: string) {
   }
 }
 
+export async function getOrders() {
+  try {
+    const response = await databases.listDocuments(
+      '669a5a3d003d47ff98c7',
+      '6731ec1a001ab4994c0c',
+      [
+        Query.equal('orderStatus','READY_FOR_PICKUP')
+      ]
+    );
+    
+    const orders = response.documents.map((doc) => {
+      // Handle restaurant parsing (it's an array)
+      const restaurant = Array.isArray(doc.restaurant) 
+        ? doc.restaurant[0] 
+        : JSON.parse(doc.restaurant);
+
+      // Parse user if needed
+      const user = typeof doc.user === 'string'
+        ? JSON.parse(doc.user)
+        : doc.user;
+
+      return {
+        ...doc,
+        restaurant,
+        user
+      };
+    });
+
+    return orders;
+  } catch (error) {
+    console.error('Failed to fetch orders: ', error);
+    return [];
+  }
+}
+
+export async function getOrder(id: string) {
+  try {
+    const response = await databases.listDocuments(
+      '669a5a3d003d47ff98c7',
+      '6731ec1a001ab4994c0c',
+      [Query.equal('$id', id)]
+    );
+
+    // Ensure the response contains only one document
+    const [doc] = response.documents;
+    if (!doc) {
+      console.warn(`No order found for ID: ${id}`);
+      return null;
+    }
+
+    // Parse and validate restaurant
+    let restaurant;
+    try {
+      const parsedRestaurant = typeof doc.restaurant === 'string' 
+        ? JSON.parse(doc.restaurant) 
+        : doc.restaurant;
+
+      // Handle the case where restaurant is an array
+      if (Array.isArray(parsedRestaurant)) {
+        restaurant = parsedRestaurant[0]; // Use the first restaurant in the array
+        if (!restaurant || typeof restaurant.lng !== 'number' || typeof restaurant.lat !== 'number') {
+          console.warn('Invalid restaurant data:', restaurant);
+          restaurant = null; // Default to null if validation fails
+        }
+      } else {
+        console.warn('Restaurant is not an array:', parsedRestaurant);
+        restaurant = null;
+      }
+    } catch (error) {
+      console.warn('Error parsing restaurant data:', error);
+      restaurant = null;
+    }
+
+    // Parse and validate user
+    let user;
+    try {
+      user = typeof doc.user === 'string' ? JSON.parse(doc.user) : doc.user;
+    } catch (error) {
+      console.warn('Error parsing user data:', error);
+      user = null;
+    }
+
+    // Return the normalized order
+    return {
+      ...doc,
+      restaurant,
+      user,
+    };
+  } catch (error) {
+    console.error('Failed to fetch order:', error);
+    return null; // Return null in case of failure
+  }
+};
+
+export async function getActiveOrder(id: string) {
+  try {
+    const response = await databases.listDocuments(
+      '669a5a3d003d47ff98c7',
+      '6731ec1a001ab4994c0c',
+      [
+        Query.equal('driverId', id),
+        Query.notEqual('orderStatus', 'CANCELLED'),
+        Query.notEqual('orderStatus', 'COMPLETED'),
+      ]
+    );
+
+    // Ensure the response contains only one document
+    const [doc] = response.documents;
+    if (!doc) {
+      console.warn(`No order found for ID: ${id}`);
+      return null;
+    }
+
+    // Parse and validate restaurant
+    let restaurant;
+    try {
+      const parsedRestaurant = typeof doc.restaurant === 'string' 
+        ? JSON.parse(doc.restaurant) 
+        : doc.restaurant;
+
+      // Handle the case where restaurant is an array
+      if (Array.isArray(parsedRestaurant)) {
+        restaurant = parsedRestaurant[0]; // Use the first restaurant in the array
+        if (!restaurant || typeof restaurant.lng !== 'number' || typeof restaurant.lat !== 'number') {
+          console.warn('Invalid restaurant data:', restaurant);
+          restaurant = null; // Default to null if validation fails
+        }
+      } else {
+        console.warn('Restaurant is not an array:', parsedRestaurant);
+        restaurant = null;
+      }
+    } catch (error) {
+      console.warn('Error parsing restaurant data:', error);
+      restaurant = null;
+    }
+
+    // Parse and validate user
+    let user;
+    try {
+      user = typeof doc.user === 'string' ? JSON.parse(doc.user) : doc.user;
+    } catch (error) {
+      console.warn('Error parsing user data:', error);
+      user = null;
+    }
+
+    // Return the normalized order
+    return {
+      ...doc,
+      restaurant,
+      user,
+    };
+  } catch (error) {
+    console.error('Failed to fetch order:', error);
+    return null; // Return null in case of failure
+  }
+};
+
 export async function searchPosts(query: string) {
   try {
     const posts = await databases.listDocuments(

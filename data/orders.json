@@ -5,7 +5,6 @@
     "status": "NEW",
     "createdAt": "2022-04-16T18:56:21.890Z",
     "updatedAt": "2022-04-16T18:56:21.890Z",
-    "orderRestaurantId": "7d7965f7-1b33-4b8c-9bac-0c22bc905030",
     "Restaurant": {
       "id": "7d7965f7-1b33-4b8c-9bac-0c22bc905030",
       "name": "El Cabo Coffe Bar Tres De Mayo",
