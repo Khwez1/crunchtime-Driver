@@ -29,15 +29,27 @@ const OrderProvider = ({ children }) => {
   }, []); // No dependencies, as this function should remain stable
   
   useEffect(() => {
-    if (!user.$id) return;
-    const activeOrder = getActiveOrder(user.$id)
-    if (activeOrder){
-      setOrder(activeOrder)
-    }else{
-      console.warn("It didn't work");
-      setOrder(null)
-    }
-  }, [])
+    if (!user?.$id) return;
+
+    const fetchActiveOrder = async () => {
+      try {
+        const activeOrder = await getActiveOrder(user.$id);
+        console.log("Active Order Fetch Result:", activeOrder);
+  
+        if (activeOrder) {
+          console.log("It worked!");
+          setOrder(activeOrder);
+        } else {
+          console.log("It didn't work");
+          setOrder(null);
+        }
+      } catch (error) {
+        console.error("Error fetching active order:", error);
+      }
+    };
+  
+    fetchActiveOrder();
+  }, [user?.$id])
 
   // Update order document
   const updateOrder = async (fields) => {
@@ -88,7 +100,6 @@ const OrderProvider = ({ children }) => {
     <OrderContext.Provider
       value={{
         fetchOrder,
-        fetchActiveOrder,
         acceptOrder,
         pickUpOrder,
         completeOrder,

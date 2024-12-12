@@ -73,9 +73,9 @@ export async function fetchProfile(user_id: string) {
       '66bc885a002d237e96b9', // Collection ID, users
       [Query.equal('driverId', user_id)]
     );
-    console.log(response.documents);
+    // console.log(response.documents);
     if (response.documents.length > 0) {
-      console.log('User document retrieved:', response.documents[0]);
+      // console.log('User document retrieved:', response.documents[0]);
       return response.documents[0];
     } else {
       throw new Error('User not found');
@@ -292,8 +292,7 @@ export async function getActiveOrder(id: string) {
     } catch (error) {
       console.warn('Error parsing user data:', error);
       user = null;
-    }
-
+    }    
     // Return the normalized order
     return {
       ...doc,

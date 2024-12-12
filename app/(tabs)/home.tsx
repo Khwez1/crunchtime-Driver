@@ -5,18 +5,21 @@ import BottomSheet, {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import Mapbox, { MapView, Camera, LocationPuck, PointAnnotation, Callout } from '@rnmapbox/maps';
 import { Fontisto } from '@expo/vector-icons';
 import { getOrders } from '~/lib/appwrite';
+import { Redirect } from 'expo-router';
+import { useOrderContext } from '~/providers/OrderProvider';
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_KEY || '');
 
 export default function home() {
   const [ orders, setOrders ] = useState([]);
   const bottomSheetRef = useRef<BottomSheet>(null)
   const { width, height } = useWindowDimensions();
+  const { order } = useOrderContext();
 
   const snapPoints = useMemo(() => ["12%","95%"],[])
 
   useEffect(() => {
     getOrders().then((fetchedOrders) => {
-      console.log('Fetched Orders in Component:', JSON.stringify(fetchedOrders, null, 2));
+      // console.log('Fetched Orders in Component:', JSON.stringify(fetchedOrders, null, 2));
       setOrders(fetchedOrders);
     }).catch((error) => {
       console.error('Error in fetching orders:', error);
@@ -25,9 +28,10 @@ export default function home() {
 
   // Add more logging in the rendering
   useEffect(() => {
-    console.log('Current Orders State:', JSON.stringify(orders, null, 2));
+    // console.log('Current Orders State:', JSON.stringify(orders, null, 2));
   }, [orders]);
 
+  if (order) return <Redirect href={`/orderDelivery/${order.$id}`} />;
   return (
     <View className="flex-1">
       <MapView style={{height, width}}>

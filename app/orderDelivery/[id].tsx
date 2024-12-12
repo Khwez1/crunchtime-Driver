@@ -65,7 +65,7 @@ const OrderDelivery = () => {
   // Fetch order on mount
   useEffect(() => {
     if (!id || rawOrder?.$id === id) return; // Skip if order is already fetched
-    console.log("Fetching order with ID:", id);
+    // console.log("Fetching order with ID:", id);
     fetchOrder(id);
   }, [id, rawOrder?.$id, fetchOrder]);
   
