@@ -304,16 +304,3 @@ export async function getActiveOrder(id: string) {
     return null; // Return null in case of failure
   }
 };
-
-export async function searchPosts(query: string) {
-  try {
-    const posts = await databases.listDocuments(
-      '669a5a3d003d47ff98c7', // Database ID
-      '', // Collection ID, messages
-      [Query.search('title', query)]
-    );
-    return posts.documents;
-  } catch (err) {
-    throw new Error(err);
-  }
-}

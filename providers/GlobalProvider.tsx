@@ -68,7 +68,7 @@ const GlobalProvider = ({ children }) => {
   async function deleteUser(userId) {
     try {
       const result = await functions.createExecution(
-        '66e81c81000b77b6beae',
+        '67628ba43c6b1d58bb38',
         JSON.stringify({ userId })
       );
       console.log('Function response:', result);
