@@ -20,21 +20,21 @@ export default function TabLayout() {
         name="history"
         options={{
           title: 'History',
-          tabBarIcon: ({ color }) => <TabBarIcon name="clock-o" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="history" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="liked"
+        name="earnings"
         options={{
-          title: 'Liked',
-          tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
+          title: 'Earnings',
+          tabBarIcon: ({ color }) => <TabBarIcon name="line-chart" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <TabBarIcon name="user-circle" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
         }}
       />
     </Tabs>

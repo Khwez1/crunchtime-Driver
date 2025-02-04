@@ -8,7 +8,7 @@ import {
   Storage,
   Functions,
 } from 'react-native-appwrite';
-
+import CryptoJS from 'crypto-js';
 const client = new Client();
 const databases = new Databases(client);
 const avatars = new Avatars(client);
@@ -26,7 +26,7 @@ export async function sendMessage(payload: object, Permissions: []) {
   try {
     await databases.createDocument(
       '669a5a3d003d47ff98c7', // Database ID
-      '66d053d10001a7923c43', // Collection ID, messages
+      '677d5197000b1aefb3d0', // Collection ID, messages
       ID.unique(),
       payload,
       Permissions
@@ -37,12 +37,15 @@ export async function sendMessage(payload: object, Permissions: []) {
 }
 
 // Get messages
-export async function getMessages() {
+export async function getMessages(activeOrderId: string) {
   try {
     const response = await databases.listDocuments(
       '669a5a3d003d47ff98c7', // Database ID
-      '66d053d10001a7923c43', // Collection ID, messages
-      [Query.orderDesc('$createdAt')]
+      '677d5197000b1aefb3d0', // Collection ID, messages
+      [
+        Query.orderDesc('$createdAt'),
+        Query.equal('orderId', activeOrderId)
+      ]
     );
     console.log('RESPONSE:', response);
     return response.documents;
@@ -57,7 +60,7 @@ export async function deleteMessage(message_id: string) {
   try {
     await databases.deleteDocument(
       '669a5a3d003d47ff98c7', // Database ID
-      '66d053d10001a7923c43', // Collection ID, messages
+      '677d5197000b1aefb3d0', // Collection ID, messages
       message_id
     );
   } catch (err) {
@@ -231,6 +234,11 @@ export async function getOrder(id: string) {
       user = null;
     }
 
+    if (doc?.otp) {
+      // Using expo-crypto to hash the OTP
+      doc.otp = CryptoJS.SHA256(doc.otp).toString(CryptoJS.enc.Base64);
+    }
+
     // Return the normalized order
     return {
       ...doc,
@@ -243,64 +251,107 @@ export async function getOrder(id: string) {
   }
 };
 
-export async function getActiveOrder(id: string) {
+export async function getActiveOrder(driverId: string) {
   try {
     const response = await databases.listDocuments(
-      '669a5a3d003d47ff98c7',
-      '6731ec1a001ab4994c0c',
+      '669a5a3d003d47ff98c7', // Database ID
+      '6731ec1a001ab4994c0c', // Collection ID
       [
-        Query.equal('driverId', id),
+        Query.equal('driverId', driverId),
         Query.notEqual('orderStatus', 'CANCELLED'),
+        Query.notEqual('orderStatus', 'NEW'),
+        Query.notEqual('orderStatus', 'READY_FOR_PICKUP'),
         Query.notEqual('orderStatus', 'COMPLETED'),
       ]
     );
 
     // Ensure the response contains only one document
-    const [doc] = response.documents;
-    if (!doc) {
-      console.warn(`No order found for ID: ${id}`);
+    const [activeOrder] = response.documents;
+    if (!activeOrder) {
+      // console.warn(`No active order found for driver ID: ${driverId}`);
       return null;
     }
 
     // Parse and validate restaurant
-    let restaurant;
+    let restaurant = null;
     try {
-      const parsedRestaurant = typeof doc.restaurant === 'string' 
-        ? JSON.parse(doc.restaurant) 
-        : doc.restaurant;
+      const parsedRestaurant =
+        typeof activeOrder.restaurant === 'string'
+          ? JSON.parse(activeOrder.restaurant)
+          : activeOrder.restaurant;
 
-      // Handle the case where restaurant is an array
-      if (Array.isArray(parsedRestaurant)) {
-        restaurant = parsedRestaurant[0]; // Use the first restaurant in the array
-        if (!restaurant || typeof restaurant.lng !== 'number' || typeof restaurant.lat !== 'number') {
-          console.warn('Invalid restaurant data:', restaurant);
-          restaurant = null; // Default to null if validation fails
+      if (Array.isArray(parsedRestaurant) && parsedRestaurant[0]) {
+        const firstRestaurant = parsedRestaurant[0];
+        if (typeof firstRestaurant.lng === 'number' && typeof firstRestaurant.lat === 'number') {
+          restaurant = firstRestaurant;
+        } else {
+          console.warn('Invalid restaurant coordinates:', firstRestaurant);
         }
-      } else {
-        console.warn('Restaurant is not an array:', parsedRestaurant);
-        restaurant = null;
+      } else if (!Array.isArray(parsedRestaurant)) {
+        console.warn('Unexpected restaurant format:', parsedRestaurant);
       }
     } catch (error) {
       console.warn('Error parsing restaurant data:', error);
-      restaurant = null;
     }
 
     // Parse and validate user
-    let user;
+    let user = null;
     try {
-      user = typeof doc.user === 'string' ? JSON.parse(doc.user) : doc.user;
+      user =
+        typeof activeOrder.user === 'string'
+          ? JSON.parse(activeOrder.user)
+          : activeOrder.user;
     } catch (error) {
       console.warn('Error parsing user data:', error);
-      user = null;
-    }    
+    }
+    if (activeOrder?.otp) {
+      // Using expo-crypto to hash the OTP
+      activeOrder.otp = CryptoJS.SHA256(activeOrder.otp).toString(CryptoJS.enc.Base64);
+    }
     // Return the normalized order
     return {
-      ...doc,
+      ...activeOrder,
       restaurant,
       user,
     };
   } catch (error) {
-    console.error('Failed to fetch order:', error);
+    console.error('Failed to fetch active order:', error);
     return null; // Return null in case of failure
   }
 };
+
+export async function getOrdersHistory(driverId) {
+  try {
+    const response = await databases.listDocuments(
+      '669a5a3d003d47ff98c7',
+      '6731ec1a001ab4994c0c',
+      [
+        Query.equal('driverId', driverId),
+        Query.equal('orderStatus','COMPLETED'),
+      ]
+    );
+    
+    const orders = response.documents.map((doc) => {
+      // Handle restaurant parsing (it's an array)
+      const restaurant = Array.isArray(doc.restaurant) 
+        ? doc.restaurant[0] 
+        : JSON.parse(doc.restaurant);
+
+      // Parse user if needed
+      const user = typeof doc.user === 'string'
+        ? JSON.parse(doc.user)
+        : doc.user;
+
+      return {
+        ...doc,
+        restaurant,
+        user
+      };
+    });
+    console.log(orders);
+    return orders;
+  } catch (error) {
+    console.error('Failed to fetch orders: ', error);
+    return [];
+  }
+}

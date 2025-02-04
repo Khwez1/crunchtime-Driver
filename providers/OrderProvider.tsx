@@ -1,6 +1,8 @@
 import { createContext, useEffect, useState, useContext, useCallback } from "react";
-import { client, databases, getOrder, getActiveOrder } from "~/lib/appwrite";
+import { client, databases, getOrder, getActiveOrder, functions } from "~/lib/appwrite";
 import { useGlobalContext } from "./GlobalProvider";
+import CryptoJS from "crypto-js";
+import { router } from "expo-router";
 
 const OrderContext = createContext({});
 
@@ -88,13 +90,45 @@ const OrderProvider = ({ children }) => {
   }, [order?.$id, order?.orderStatus]);
 
   // Accept the order
-  const acceptOrder = () => updateOrder({ orderStatus: "ACCEPTED", driverId: user?.$id });
+  const acceptOrder = async () => {
+    try {
+      await updateOrder({ orderStatus: "ACCEPTED", driverId: user?.$id });
+      // Call the serverless function here if needed
+      await functions.createExecution('677fb361000fe24800a5', JSON.stringify({ orderId: order.$id }));
+    } catch (error) {
+      console.error("Error accepting order:", error);
+    }
+  };
 
   // Pick up the order
   const pickUpOrder = () => updateOrder({ orderStatus: "PICKED_UP" });
 
   // Complete the order
-  const completeOrder = () => updateOrder({ orderStatus: "COMPLETED" });
+  const completeOrder = async (enteredOtp) => {
+    try {
+      // Fetch the hashed OTP from the order (assumes it's stored in `order.otp`)
+      const hashedOtp = order?.otp;
+      if (!hashedOtp) {
+        throw new Error("No OTP found for this order.");
+      }
+  
+      // Hash the entered OTP to compare with the stored hashed OTP
+      const hashedEnteredOtp = CryptoJS.SHA256(enteredOtp).toString(CryptoJS.enc.Base64);
+  
+      // Compare the entered OTP (hashed) with the stored hashed OTP
+      if (hashedEnteredOtp !== hashedOtp) {
+        console.error("Invalid OTP entered.");
+        throw new Error("Invalid OTP. Please try again.");
+      }
+  
+      // If OTP is valid, proceed to complete the order
+      await updateOrder({ orderStatus: "COMPLETED" });
+      router.push("/home");
+      setOrder(null); // Set order to null after completion
+    } catch (error) {
+      console.error("Error completing order:", error);
+    }
+  };
 
   return (
     <OrderContext.Provider

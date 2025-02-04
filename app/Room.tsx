@@ -11,45 +11,54 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Permission, Role } from 'react-native-appwrite';
-
 import { sendMessage, getMessages, deleteMessage, client } from '../lib/appwrite';
-
 import { useGlobalContext } from '~/providers/GlobalProvider';
+import { useOrderContext } from '~/providers/OrderProvider';
+import { router } from 'expo-router';
 
 export default function Room() {
   const [messages, setMessages] = useState([]);
   const [messageBody, setMessageBody] = useState('');
+  const [error, setError] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
-
   const { user } = useGlobalContext();
+  const { order } = useOrderContext();
+
+  // Redirect to home page if no order is available
+  useEffect(() => {
+    if (!order) {
+      router.push('/home'); // Change 'home' to the name of your home page
+    }
+  }, [order, ]);
 
   useEffect(() => {
-    fetchMessages();
-
-    const unsubscribe = client.subscribe(
-      `databases.${'669a5a3d003d47ff98c7'}.collections.${'66d053d10001a7923c43'}.documents`,
-      (response) => {
-        if (response.events.includes('databases.*.collections.*.documents.*.create')) {
-          console.log('A message was CREATED');
-          setMessages((prevState) => [response.payload, ...prevState]);
+    if (order) {
+      fetchMessages();
+        
+      const unsubscribe = client.subscribe(
+        `databases.${'669a5a3d003d47ff98c7'}.collections.${'677d5197000b1aefb3d0'}.documents`,
+        (response) => {
+          if (response.payload.orderId === order.$id) {
+            if (response.events.includes(`databases.*.collections.*.documents.*.create`)) {
+              console.log('A message was CREATED');
+              setMessages((prevState) => [response.payload, ...prevState]);
+            }
+            if (response.events.includes(`databases.*.collections.*.documents.*.delete`)) {
+              console.log('A message was DELETED');
+              setMessages((messages) =>
+                messages.filter((message) => message.$id !== response.payload.$id)
+              );
+            }
+          }
         }
-        if (response.events.includes('databases.*.collections.*.documents.*.delete')) {
-          console.log('A message was DELETED');
-          setMessages((messages) =>
-            messages.filter((message) => message.$id !== response.payload.$id)
-          );
-        }
-      }
-    );
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+      );
+      return () => unsubscribe();
+    }
+  }, [order]);
 
   const fetchMessages = async () => {
     try {
-      const messages = await getMessages();
+      const messages = await getMessages(order.$id);
       setMessages(messages);
     } catch (error) {
       Alert.alert('Failed to fetch messages:', error);
@@ -67,10 +76,15 @@ export default function Room() {
   };
 
   const handleSubmit = async () => {
+    if (!messageBody.trim()) {
+      setError('This field is required');
+      return;
+    } 
     const payload = {
-      user_Id: user.$id,
+      orderId: order.$id,
+      userId: user.$id,
       username: user.name,
-      Body: messageBody,
+      body: messageBody,
     };
 
     const Permissions = [
@@ -92,68 +106,65 @@ export default function Room() {
   };
 
   return (
-    <SafeAreaView>
-      <ScrollView>
-        {/* main */}
-        <View className="bg-white p-8">
-          {/* room--container */}
-
-          <View className="mb-8 flex flex-col gap-2">
-            {/* message--form */}
+    <SafeAreaView className="flex-1 p-6 bg-white">
+      <ScrollView className="container p-4">
+        <View className="room--container bg-[rgba(27,27,39,1)] p-4 rounded-b-xl border border-gray-300">
+          {/* Form */}
+          <View id="message--form" className="flex flex-col gap-2">
             <TextInput
-              required
-              className="mt-7 rounded-lg border border-gray-300 p-4"
+              className="rounded-lg border border-gray-300 p-4 text-gray-800"
               maxLength={1000}
-              placeholder="Message"
+              placeholder="Say something..."
               value={messageBody}
               onChangeText={setMessageBody}
             />
+            <View className="send-btn--wrapper flex justify-end">
+              {error ? <Text className='text-red-700 mb-[8px]'>{error}</Text> : null}
+              <TouchableOpacity
+                className="btn btn--secondary bg-red-600 rounded-lg px-4 py-2"
+                onPress={handleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text className="text-center text-white">Send</Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <View className="mb-8 flex justify-end">
-            {/* send-btn--wrapper */}
-            <TouchableOpacity
-              className="mt-7 w-full rounded-xl bg-red-600 p-4 font-semibold text-black"
-              onPress={handleSubmit}
-              disabled={isSubmitting}>
-              {/* btn btn--secondary */}
-              {isSubmitting ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text className="text-center text-white">Send</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          <View>
+          {/* Messages */}
+          <View className="mt-4">
             {messages.map((message) => (
               <View
                 key={message.$id}
-                className="mb-4 flex flex-col gap-2 rounded-lg border border-[rgba(40,41,57,1)] bg-[rgba(27,27,39,1)] p-4">
-                {/* message--wrapper */}
-                <View className="mb-2 flex items-center justify-between">
-                  {/* message--header */}
-                  <Text>
-                    {message?.username ? (
-                      <Text className="text-white">{message.username}</Text>
-                    ) : (
-                      <Text className="text-white">Anonymous user</Text>
-                    )}
+                className="message--wrapper mb-4 flex flex-col gap-2 p-4 rounded-lg bg-gray-900 border border-gray-600"
+              >
+                {/* Header */}
+                <View className="message--header flex items-center justify-between">
+                  <Text className="text-white">
+                    {message?.username || "Anonymous user"}
                   </Text>
-                  <Text className="text-gray-400">
+                  <Text className="message-timestamp text-gray-400">
                     {new Date(message.$createdAt).toLocaleString()}
                   </Text>
-                  {/* message timestamp */}
-
-                  {message.$permissions.includes(`delete(\"user:${user.$id}\")`) && (
+                  {message.$permissions.includes(`delete("user:${user.$id}")`) && (
                     <TouchableOpacity onPress={() => handleDelete(message.$id)}>
-                      <FontAwesome name="trash" size={24} color="grey" />
+                      <FontAwesome name="trash" size={24} color="#8db3dd" />
                     </TouchableOpacity>
                   )}
                 </View>
-                <View className="max-w-full rounded-xl bg-[rgba(219,26,90,1)] p-4 text-[rgb(226,227,232)]">
-                  {/* message--body */}
-                  <Text>{message.Body}</Text>
+
+                {/* Body */}
+                <View
+                  className={`message--body ${
+                    message.user_id === user.$id
+                      ? "message--body--owner border border-[rgba(219,26,90,1)] bg-[rgba(40,41,57,1)]"
+                      : "bg-[rgba(219,26,90,1)]"
+                  } p-4 rounded-xl text-gray-100`}
+                >
+                  <Text className='text-black'>{message.Body}</Text>
                 </View>
               </View>
             ))}
