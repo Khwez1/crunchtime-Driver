@@ -82,7 +82,7 @@ const BottomSheetDetails = (props) => {
           </View>
           <View className="border-t-[1px] border-gray-500 pt-[20px]">
             <BottomSheetFlatList 
-              data={typeof order.items === 'string' ? JSON.parse(JSON.parse(order.items)) : order.items}
+              data={typeof order.items === 'string' ? JSON.parse(order.items) : order.items}
               keyExtractor={(item, index) => `${item.dishId}-${index}`}
               renderItem={({ item }) => (
                 <View className="flex-row justify-between mb-5">

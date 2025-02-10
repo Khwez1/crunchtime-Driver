@@ -42,8 +42,7 @@ const OrderDelivery = () => {
         : rawOrder.restaurant;
       const user = typeof rawOrder.user === "string"
         ? JSON.parse(rawOrder.user)
-        : rawOrder.user;
-  
+        : rawOrder.user;        
       return { ...rawOrder, restaurant, user };
     } catch (error) {
       console.error("Error parsing order:", error);
@@ -136,10 +135,11 @@ const OrderDelivery = () => {
       if (driverLocation && restaurantLocation && userLocation) {
         try {
           const newDirections = await getDirections(
-            [driverLocation.longitude, driverLocation.latitude],
+            [driverLocation?.longitude, driverLocation?.latitude],
             [restaurantLocation.lng, restaurantLocation.lat],
             [userLocation.lng, userLocation.lat]
           );
+          console.log('Directions API Response:', newDirections);
           setDirection(newDirections);
         } catch (error) {
           console.error('Error fetching directions:', error);

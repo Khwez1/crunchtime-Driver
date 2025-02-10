@@ -26,7 +26,7 @@ export default function History() {
       <Text style={styles.orderDetails}>
         Order ID: {item.$id} - {item.orderStatus}
       </Text>
-      <Text style={styles.orderDetails}>Date: {new Date(item.createdAt).toLocaleDateString()}</Text>
+      <Text style={styles.orderDetails}>Date: {new Date(item.$createdAt).toLocaleDateString()}</Text>
 
       {/* User Details */}
       <Text style={styles.orderDetails}>Customer: {item.user.name}</Text>
